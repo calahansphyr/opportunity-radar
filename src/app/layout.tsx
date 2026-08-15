@@ -1,16 +1,28 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import TopNav from "./components/side-nav";
+import { Wordmark } from "./components/brand";
+import { countBySource } from "@/lib/engine/retrieve";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Type system (Federal Catalyst kit): Hanken Grotesk headlines,
+// Inter body, JetBrains Mono labels/data/buttons.
+const hanken = Hanken_Grotesk({
+  variable: "--font-hanken",
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "800"],
+});
+
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jbMono = JetBrains_Mono({
+  variable: "--font-jbmono",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
 export const metadata: Metadata = {
@@ -18,41 +30,62 @@ export const metadata: Metadata = {
   description: "Match your startup to US government funding — honestly.",
 };
 
-// App shell: sticky top nav + page slot + footer. Every page renders inside
-// this frame; restyle here for site-wide chrome.
+/** Live program count for the navbar; falls back quietly if the DB is cold. */
+function programCount(): string {
+  try {
+    const counts = countBySource();
+    const total = Object.values(counts).reduce((a, n) => a + n, 0);
+    if (total > 0) return total.toLocaleString("en-US");
+  } catch {
+    // ingest hasn't run — show nothing rather than a made-up number
+  }
+  return "";
+}
+
+// App shell (Federal Catalyst): white top navbar — wordmark in the federal
+// blue, section tabs with the active underline, live monitoring count on the
+// right. Pages render full-width below and compose their own columns.
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const count = programCount();
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${hanken.variable} ${inter.variable} ${jbMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-neutral-950 text-neutral-100">
-        <header className="sticky top-0 z-20 border-b border-neutral-800 bg-neutral-950/90 backdrop-blur">
-          <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4">
-            <Link href="/" className="text-base font-bold tracking-tight">
-              📡 Opportunity Radar
+      <head>
+        {/* Material Symbols Outlined — the kit's only icon source. Loaded from
+            Google rather than vendored: the variable woff2 is 3.9 MB. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
+      <body className="flex min-h-full flex-col">
+        <header className="sticky top-0 z-30 border-b border-hairline bg-card shadow-sm">
+          <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center gap-4 px-4 sm:gap-8 sm:px-6 lg:px-10">
+            <Link href="/" className="shrink-0">
+              <Wordmark />
             </Link>
-            <nav className="flex items-center gap-5 text-sm text-neutral-400">
-              <Link href="/" className="hover:text-neutral-100">
-                Analyze
-              </Link>
-              <Link href="/pursuits" className="hover:text-neutral-100">
-                Pursuits
-              </Link>
-              <Link href="/radar" className="hover:text-neutral-100">
-                Radar
-              </Link>
-            </nav>
+            <TopNav />
+            <div className="flex-1" />
+            {count && (
+              <p className="hidden items-center gap-2 rounded-full bg-good-soft px-3.5 py-1.5 text-[12.5px] font-medium text-good md:flex">
+                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-good" />
+                Monitoring <span className="tnum font-semibold">{count}</span> programs
+              </p>
+            )}
           </div>
         </header>
 
         <div className="flex-1">{children}</div>
 
-        <footer className="border-t border-neutral-800">
-          <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-5 text-xs text-neutral-500">
+        <footer className="border-t border-hairline bg-card">
+          <div className="mx-auto flex w-full max-w-[1440px] flex-wrap items-center justify-between gap-2 px-4 py-6 text-[12.5px] text-faint sm:px-6 lg:px-10">
             <p>
-              Data: Grants.gov · SAM.gov Assistance Listings · USAspending · Utah state
-              programs
+              <span className="font-semibold text-muted">Sources</span> · Grants.gov · SAM.gov
+              Assistance Listings · USAspending · Utah state programs
             </p>
             <p>Honest matches only — we say so when there&apos;s no fit.</p>
           </div>

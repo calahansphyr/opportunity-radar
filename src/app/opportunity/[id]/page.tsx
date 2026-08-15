@@ -32,34 +32,53 @@ export default async function OpportunityPage({ params }: Params) {
   const o = opp((await params).id);
   if (!o) notFound();
   const close = daysUntil(o.closeDate);
+  const closeSoon = close != null && close >= 0 && close <= 30;
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
       {/* header */}
-      <header id="opp-header" className="space-y-2">
-        <Link href="/" className="text-xs text-neutral-500 hover:text-neutral-300">
-          ← Back to your matches
-        </Link>
-        <h1 className="text-2xl font-bold tracking-tight">{o.title}</h1>
-        <p className="text-sm text-neutral-400">
-          {o.agency}
-          {o.agencyCode ? ` (${o.agencyCode})` : ""}
+      <header id="opp-header" className="space-y-3">
+        <p className="text-[13px] text-muted">
+          <Link href="/pursuits" className="transition-colors hover:text-brand">
+            Pursuit Workspace
+          </Link>
+          <span className="text-faint"> / </span>
+          <span className="text-faint">{o.title}</span>
         </p>
-        <div className="flex flex-wrap gap-2 text-xs">
-          <span className="rounded-full border border-neutral-700 px-2.5 py-0.5">
-            {o.kind.replace(/_/g, "/")}
-          </span>
-          <span className="rounded-full border border-neutral-700 px-2.5 py-0.5">
-            {o.source.replace(/_/g, ".")}
-          </span>
-          <span className="rounded-full border border-neutral-700 px-2.5 py-0.5">{o.status}</span>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <h1 className="max-w-3xl font-display text-[26px] font-bold tracking-tight text-ink sm:text-[30px]">
+            {o.title}
+          </h1>
+          {o.url && (
+            <a
+              href={o.url}
+              target="_blank"
+              rel="noreferrer"
+              className="shrink-0 rounded-xl border border-line bg-card px-4 py-2.5 text-[13.5px] font-medium text-muted transition-colors hover:bg-surface-low"
+            >
+              Review official notice ↗
+            </a>
+          )}
+        </div>
+        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+          {o.agency}
+          {o.agencyCode ? ` · ${o.agencyCode}` : ""}
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Chip>{o.kind.replace(/_/g, "/")}</Chip>
+          <Chip>{o.source.replace(/_/g, ".")}</Chip>
+          <Chip>{o.status}</Chip>
         </div>
       </header>
 
-      {/* key facts */}
-      <section id="opp-facts" className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {/* key facts — stat strip */}
+      <section
+        id="opp-facts"
+        className="card grid grid-cols-2 divide-hairline overflow-hidden sm:grid-cols-4 sm:divide-x"
+      >
         <Fact
           label="Award range"
+          money
           value={
             o.awardFloorUsd != null && o.awardCeilingUsd != null
               ? `${fmt(o.awardFloorUsd)}–${fmt(o.awardCeilingUsd)}`
@@ -71,7 +90,7 @@ export default async function OpportunityPage({ params }: Params) {
         <Fact
           label="Closes"
           value={o.closeDate ? `${o.closeDate}${close != null && close >= 0 ? ` (${close}d)` : ""}` : "rolling"}
-          alert={close != null && close >= 0 && close <= 30}
+          alert={closeSoon}
         />
         <Fact label="Program total" value={fmt(o.estimatedTotalUsd)} />
         <Fact
@@ -87,69 +106,143 @@ export default async function OpportunityPage({ params }: Params) {
         />
       </section>
 
-      {/* pursuit: plan + tracker */}
+      {/* pursuit workspace: plan + tracker (full width — carries its own grid) */}
       <PursuitPanel opportunityId={o.id} />
 
-      {/* about */}
-      <Section id="opp-about" title="About this program">
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
-          {o.description || "No description provided by the source."}
-        </p>
-      </Section>
-
-      {o.eligibilityText && (
-        <Section id="opp-eligibility" title="Who's eligible (official text)">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-neutral-300">
-            {o.eligibilityText}
-          </p>
-        </Section>
-      )}
-
-      {/* contact + source link */}
-      <Section id="opp-contact" title="Contact & official notice">
-        <div className="space-y-1 text-sm text-neutral-300">
-          {o.contactName && <p>{o.contactName}</p>}
-          {o.contactEmail && (
-            <a href={`mailto:${o.contactEmail}`} className="text-blue-400 underline">
-              {o.contactEmail}
-            </a>
-          )}
-          {o.url ? (
-            <p>
-              <a
-                href={o.url}
-                target="_blank"
-                rel="noreferrer"
-                className="text-blue-400 underline hover:text-blue-300"
-              >
-                View the official notice ↗
-              </a>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="space-y-5">
+          {/* about */}
+          <Section id="opp-about" title="ABOUT THIS PROGRAM">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/85">
+              {o.description || "No description provided by the source."}
             </p>
-          ) : (
-            <p className="text-neutral-500">No official URL on record — search the title on the source site.</p>
-          )}
-          {o.alnNumbers.length > 0 && (
-            <p className="text-xs text-neutral-500">ALN: {o.alnNumbers.join(", ")}</p>
+          </Section>
+
+          {o.eligibilityText && (
+            <Section id="opp-eligibility" title="WHO'S ELIGIBLE (OFFICIAL TEXT)">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink/85">
+                {o.eligibilityText}
+              </p>
+            </Section>
           )}
         </div>
-      </Section>
+
+        <aside className="space-y-4">
+          {/* funding stat card */}
+          <Section id="opp-funding" title="FUNDING">
+            <p
+              className={`tnum font-display text-2xl font-bold tracking-tight ${
+                o.awardCeilingUsd != null ? "text-good" : "text-faint"
+              }`}
+            >
+              {o.awardCeilingUsd != null ? `Up to ${fmt(o.awardCeilingUsd)}` : "Unlisted"}
+            </p>
+            {o.awardFloorUsd != null && (
+              <p className="text-[13.5px] text-muted">
+                floor <span className="font-mono">{fmt(o.awardFloorUsd)}</span>
+              </p>
+            )}
+          </Section>
+
+          {/* deadline timeline */}
+          <Section id="opp-deadline" title="DEADLINE TIMELINE">
+            {o.closeDate ? (
+              <div className="flex items-baseline gap-3 py-1">
+                <span className="w-[82px] flex-none font-mono text-[12px] font-semibold text-brand">
+                  {o.closeDate}
+                </span>
+                <p className="text-[13.5px] text-ink">
+                  Submission closes{" "}
+                  {closeSoon && (
+                    <span className="rounded-full bg-risk-soft px-3 py-1 text-[12px] font-semibold text-risk">
+                      in {close} days
+                    </span>
+                  )}
+                </p>
+              </div>
+            ) : (
+              <p className="text-[13.5px] text-muted">Rolling — no fixed close date.</p>
+            )}
+          </Section>
+
+          {/* contact + source link */}
+          <Section id="opp-contact" title="CONTACT & OFFICIAL NOTICE">
+            <div className="space-y-1.5 text-[13.5px] text-ink/85">
+              {o.contactName && <p>{o.contactName}</p>}
+              {o.contactEmail && (
+                <a
+                  href={`mailto:${o.contactEmail}`}
+                  className="text-accent underline transition-colors hover:text-brand"
+                >
+                  {o.contactEmail}
+                </a>
+              )}
+              {o.url ? (
+                <p>
+                  <a
+                    href={o.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-accent underline transition-colors hover:text-brand"
+                  >
+                    View the official notice ↗
+                  </a>
+                </p>
+              ) : (
+                <p className="text-faint">No official URL on record — search the title on the source site.</p>
+              )}
+              {o.alnNumbers.length > 0 && (
+                <p className="font-mono text-xs text-faint">ALN: {o.alnNumbers.join(", ")}</p>
+              )}
+            </div>
+          </Section>
+        </aside>
+      </div>
     </main>
   );
 }
 
-function Fact({ label, value, alert }: { label: string; value: string; alert?: boolean }) {
+function Chip({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-neutral-800 bg-neutral-900 p-3">
-      <p className={`text-sm font-bold ${alert ? "text-red-400" : ""}`}>{value}</p>
-      <p className="text-xs text-neutral-500">{label}</p>
+    <span className="rounded-full bg-soft px-3 py-1 text-[12px] font-semibold text-brand">
+      {children}
+    </span>
+  );
+}
+
+function Fact({
+  label,
+  value,
+  money = false,
+  alert = false,
+}: {
+  label: string;
+  value: string;
+  money?: boolean;
+  alert?: boolean;
+}) {
+  return (
+    <div className="px-5 py-4">
+      <p
+        className={`tnum font-display text-[20px] font-bold tracking-tight ${
+          money && value !== "unlisted" ? "text-good" : alert ? "text-risk" : value === "unlisted" || value === "—" ? "text-faint" : "text-ink"
+        }`}
+      >
+        {value}
+      </p>
+      <p className="mt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+        {label}
+      </p>
     </div>
   );
 }
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
-    <section id={id} className="space-y-2 rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-neutral-500">{title}</h2>
+    <section id={id} className="card space-y-2 p-6">
+      <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+        {title}
+      </h2>
       {children}
     </section>
   );

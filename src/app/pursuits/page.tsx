@@ -1,10 +1,12 @@
 "use client";
 
-// Pursuits dashboard: every funding application in flight — progress,
-// next action, and deadline at a glance.
+// Pursuit workspace shell (Federal Catalyst anatomy): a slim "Active Grants"
+// rail on the left listing every pursuit; selecting one renders its full
+// workspace (PursuitPanel) inline on the right. Deep-links via ?id=.
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import PursuitPanel from "../opportunity/[id]/pursuit-panel";
 
 interface PursuitRow {
   id: number;
@@ -23,96 +25,129 @@ interface PursuitRow {
   } | null;
 }
 
+// Status chips follow the status rules: soft/brand = in flight,
+// good = money outcomes, faint = closed-out.
 const STATUS_BADGE: Record<string, string> = {
-  active: "border-blue-500/50 bg-blue-500/10 text-blue-300",
-  submitted: "border-yellow-500/50 bg-yellow-500/10 text-yellow-300",
-  won: "border-green-500/50 bg-green-500/10 text-green-400",
-  lost: "border-neutral-600 bg-neutral-800 text-neutral-400",
-  abandoned: "border-neutral-600 bg-neutral-800 text-neutral-400",
+  active: "bg-soft text-brand",
+  submitted: "bg-good-soft text-good",
+  won: "bg-good-soft text-good",
+  lost: "bg-bg text-faint",
+  abandoned: "bg-bg text-faint",
 };
-
-function daysUntil(iso: string | null): number | null {
-  if (!iso) return null;
-  return Math.ceil((Date.parse(iso) - Date.now()) / 86400000);
-}
 
 export default function PursuitsPage() {
   const [rows, setRows] = useState<PursuitRow[] | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   useEffect(() => {
+    const wanted = Number(new URLSearchParams(window.location.search).get("id"));
     void fetch("/api/pursuits")
       .then((r) => r.json())
-      .then((d: { pursuits?: PursuitRow[] }) => setRows(d.pursuits ?? []))
+      .then((d: { pursuits?: PursuitRow[] }) => {
+        const list = d.pursuits ?? [];
+        setRows(list);
+        setSelectedId(list.some((p) => p.id === wanted) ? wanted : (list[0]?.id ?? null));
+      })
       .catch(() => setRows([]));
   }, []);
 
-  return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
-      <header>
-        <h1 className="text-2xl font-bold tracking-tight">Your pursuits</h1>
-        <p className="text-sm text-neutral-400">
-          Every application you&apos;re working toward — plan, progress, and what&apos;s next.
-        </p>
-      </header>
+  function select(id: number) {
+    setSelectedId(id);
+    window.history.replaceState(null, "", `/pursuits?id=${id}`);
+  }
 
+  const sel = rows?.find((p) => p.id === selectedId) ?? null;
+
+  return (
+    <main className="mx-auto w-full max-w-[1400px] px-4 py-6">
       {rows == null ? (
-        <p className="animate-pulse text-sm text-neutral-500">Loading…</p>
+        <div className="shimmer h-28 rounded-2xl bg-surface-low" />
       ) : rows.length === 0 ? (
-        <section className="space-y-2 rounded-lg border border-neutral-800 bg-neutral-900 p-6 text-center">
-          <p className="text-sm text-neutral-300">No pursuits yet.</p>
-          <p className="text-xs text-neutral-500">
-            Run an analysis, open a match, and hit &ldquo;Build my submission plan&rdquo; to start
-            one.
+        <section className="card mx-auto max-w-xl space-y-3 p-8 text-center">
+          <h1 className="font-display text-[26px] font-bold tracking-tight text-ink">
+            Pursuit Workspace
+          </h1>
+          <p className="text-sm text-muted">
+            No pursuits yet — pick a match and build a submission plan.
           </p>
-          <Link href="/" className="inline-block rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500">
+          <Link
+            href="/"
+            className="inline-block rounded-xl bg-brand px-5 py-2.5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-strong"
+          >
             Find funding →
           </Link>
         </section>
       ) : (
-        <div className="space-y-3">
-          {rows.map((p) => {
-            const pct = p.taskCount ? Math.round((p.doneCount / p.taskCount) * 100) : 0;
-            const close = daysUntil(p.opportunity?.closeDate ?? null);
-            return (
-              <Link
-                key={p.id}
-                href={`/opportunity/${encodeURIComponent(p.opportunityId)}`}
-                className="block space-y-2 rounded-lg border border-neutral-800 bg-neutral-900 p-4 hover:border-neutral-600"
-              >
-                <div className="flex flex-wrap items-baseline justify-between gap-2">
-                  <h2 className="font-semibold">{p.opportunity?.title ?? p.opportunityId}</h2>
-                  <span
-                    className={`rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE[p.status] ?? STATUS_BADGE.active}`}
+        <div className="flex flex-col gap-5 lg:flex-row lg:items-start">
+          {/* left rail: Active Grants */}
+          <aside className="card w-full shrink-0 p-3 lg:w-64">
+            <p className="px-2 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+              Active Grants
+            </p>
+            <nav className="space-y-1">
+              {rows.map((p) => {
+                const active = p.id === selectedId;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => select(p.id)}
+                    className={`block w-full rounded-xl px-4 py-3 text-left transition-colors ${
+                      active ? "bg-soft" : "hover:bg-surface-low"
+                    }`}
                   >
-                    {p.status}
-                  </span>
-                </div>
-                <p className="text-xs text-neutral-400">
-                  {p.opportunity?.agency}
-                  {p.opportunity?.closeDate && (
-                    <span className={close != null && close <= 30 ? " text-red-400" : ""}>
-                      {" "}· closes {p.opportunity.closeDate}
-                      {close != null && close >= 0 ? ` (${close}d)` : ""}
+                    <span className="flex items-start gap-2">
+                      <span
+                        aria-hidden
+                        className={`mt-0.5 text-[12px] ${active ? "text-brand" : "text-faint"}`}
+                      >
+                        ▸
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span
+                          className={`block truncate text-[14px] ${
+                            active ? "font-semibold text-brand" : "font-medium text-ink"
+                          }`}
+                        >
+                          {p.opportunity?.title ?? p.opportunityId}
+                        </span>
+                        <span className="mt-1.5 flex items-center gap-2">
+                          <span
+                            className={`rounded-full px-3 py-1 text-[12px] font-semibold ${
+                              STATUS_BADGE[p.status] ?? STATUS_BADGE.active
+                            }`}
+                          >
+                            {p.status}
+                          </span>
+                          <span className="font-mono text-[12px] text-faint">
+                            {p.doneCount}/{p.taskCount}
+                          </span>
+                        </span>
+                      </span>
                     </span>
-                  )}
+                  </button>
+                );
+              })}
+            </nav>
+          </aside>
+
+          {/* right: the selected pursuit's workspace */}
+          <div className="min-w-0 flex-1 space-y-3">
+            {sel && (
+              <>
+                <p className="text-[13px] text-muted">
+                  <span className="text-faint">Active Grants</span>
+                  <span className="text-faint"> / </span>
+                  <Link
+                    href={`/opportunity/${encodeURIComponent(sel.opportunityId)}`}
+                    className="text-ink transition-colors hover:text-brand"
+                  >
+                    {sel.opportunity?.title ?? sel.opportunityId}
+                  </Link>
                 </p>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-neutral-800">
-                    <div className="h-full rounded-full bg-green-500" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="text-xs text-neutral-500">
-                    {p.doneCount}/{p.taskCount}
-                  </span>
-                </div>
-                {p.nextTask && p.status === "active" && (
-                  <p className="text-xs text-neutral-400">
-                    <span className="font-semibold text-neutral-300">Next:</span> {p.nextTask.title}
-                    {p.nextTask.dueDate ? ` · due ${p.nextTask.dueDate}` : ""}
-                  </p>
-                )}
-              </Link>
-            );
-          })}
+                <PursuitPanel key={sel.id} opportunityId={sel.opportunityId} />
+              </>
+            )}
+          </div>
         </div>
       )}
     </main>
