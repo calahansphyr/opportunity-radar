@@ -116,6 +116,31 @@
   .mk-legend__key { display: flex; align-items: center; gap: 8px; font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant); }
   .mk-legend__dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
 
+  /* One card-header band for every rail card, so Action Plan and Deadlines
+     read as siblings. Kit gap: it has no card-header component — this should
+     graduate into catalyst-kit.css as .or-card__head. */
+  .mk-cardhead {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 16px; border-bottom: 1px solid var(--color-border-ice);
+    font: 600 16px/24px var(--font-headline); color: var(--color-text-deep);
+  }
+  .mk-cardbody { padding: 16px; }
+  .or-task:last-child { border-bottom: 0; }
+
+  /* Disclosure list. Several cards may be open at once — founders compare,
+     so a true one-at-a-time accordion would fight the task. */
+  .mk-opp__toggle {
+    display: block; width: 100%; text-align: left; background: none; border: 0;
+    padding: 0; cursor: pointer; font: inherit; color: inherit;
+  }
+  .mk-opp__chev { transition: transform var(--duration-base) var(--ease-standard); flex: none; color: var(--color-outline); }
+  .or-opp[data-expanded="false"] .mk-opp__chev { transform: rotate(-90deg); }
+  .or-opp[data-expanded="false"] .or-opp__body,
+  .or-opp[data-expanded="false"] .or-opp__foot,
+  .or-opp[data-expanded="false"] .or-opp__lede { display: none; }
+  .or-opp[data-expanded="false"] .or-opp__head { border-bottom: 0; }
+  .mk-opp__toggle:hover .or-opp__title { color: var(--color-primary); }
+
   .mk-h3 { margin: 0; font: 600 24px/32px var(--font-headline); color: var(--color-text-deep); }
   .mk-h4 { margin: 0 0 24px; font: 600 20px/28px var(--font-headline); color: var(--color-text-deep); }
   .mk-label { font: 500 12px/14px var(--font-label); letter-spacing: .05em; color: var(--color-outline); }
@@ -163,7 +188,7 @@
 <main class="mk-page" id="screen-map" role="tabpanel" aria-label="Opportunity Map">
     <div class="mk-pagehead">
     <h2 class="mk-h3">Top Matches</h2>
-    <span class="mk-label">1,703 live · 412 relevant awards</span>
+    <div class="mk-row"><span class="mk-label">1,703 live · 412 relevant awards</span><button class="or-btn or-btn--text or-btn--sm" id="toggle-all">Collapse all</button></div>
   </div>
 
   <div class="mk-grid">
@@ -188,35 +213,47 @@
         </div>
       </div>
 
-      <div class="or-card">
-        <h4 class="mk-h4">Action Plan</h4>
-        <div class="or-timeline">
-          <div class="or-timeline__rule"></div>
-          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">This Week (Sep 1-7)</span><span class="or-timeline__title" style="font-weight:700">Project Pitch</span></div><p class="or-timeline__detail">Submit 3-page NSF Project Pitch to get invited to full proposal.</p></div></div>
-          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date">Mid-September</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov Registration</span></div><p class="or-timeline__detail">Check UEI status and ensure CAGE code is active.</p></div></div>
-          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date">October 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">Full Proposal Deadline</span></div><p class="or-timeline__detail">Submit via Research.gov.</p></div></div>
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Action Plan<button class="or-btn or-btn--text or-btn--sm"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">add</span>Add task</button></div>
+        <div class="or-task or-task--current">
+          <div style="display:flex;align-items:flex-start;gap:12px"><div class="or-task__radio"></div>
+            <div><p class="or-task__title">Draft the 3-page project pitch</p><p class="or-task__detail">NSF wants the pitch before it invites a full proposal.</p></div></div>
+          <span class="or-task__due or-task__due--urgent">SEP 05</span>
         </div>
+        <div class="or-task">
+          <div style="display:flex;align-items:flex-start;gap:12px"><div class="or-task__box"></div>
+            <div><p class="or-task__title">Check UEI and CAGE status</p><p class="or-task__detail">Confirm the SAM.gov record is active, not just created.</p></div></div>
+          <span class="or-task__due">SEP 12</span>
+        </div>
+        <div class="or-task">
+          <div style="display:flex;align-items:flex-start;gap:12px"><span class="material-symbols-outlined" style="font-size:24px;color:var(--color-secondary);flex:none" aria-hidden="true">check_circle</span>
+            <div><p class="or-task__title or-task__title--done">Confirm Utah incorporation</p></div></div>
+          <span class="or-task__due">AUG 14</span>
+        </div>
+        <p style="margin:0;padding:16px;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Things <b>you</b> do — tick them off. Fixed dates you cannot tick live in Deadlines below. <span class="mk-anno">TaskRow vs Timeline</span></p>
       </div>
     </div>
 
     <!-- span 6 — Top Matches -->
     <div class="mk-c6">
 
-      <article class="or-opp">
+      <article class="or-opp" data-expanded="true">
+        <button class="mk-opp__toggle" aria-expanded="true" aria-controls="opp-nsf-body">
         <div class="or-opp__head">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
             <div>
               <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--fit"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check_circle</span>Likely fit</span><span class="or-opp__meta">ID: NSF-23-456</span></div>
               <h4 class="or-opp__title">NSF SBIR Phase I</h4>
             </div>
-            <div style="text-align:right"><span class="or-opp__amount">$275K</span><span class="or-opp__meta">Deadline: Oct 15</span></div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$275K</span><span class="or-opp__meta">Deadline: Oct 15</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
           </div>
           <p class="or-opp__lede">Seed funding for deep-tech startups to conduct R&amp;D on unproven, high-impact innovations.</p>
         </div>
+        </button>
 
         <!-- Canonical body is 2-col. Third column added because the brief names
              FOUR explanation elements; auto-fit so it degrades to 2 then 1. -->
-        <div class="or-opp__body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+        <div class="or-opp__body" id="opp-nsf-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
           <div>
             <h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5>
             <ul class="or-opp__list"><li>Strong AI/Healthcare focus aligns with Digital Health topic.</li><li>Revenue stage shows commercial viability potential.</li><li>US-based small business requirement met.</li></ul>
@@ -250,6 +287,46 @@
         </div>
       </article>
 
+      <article class="or-opp" data-expanded="false">
+        <button class="mk-opp__toggle" aria-expanded="false" aria-controls="opp-hhs-body">
+        <div class="or-opp__head">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--fit"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check_circle</span>Likely fit</span><span class="or-opp__meta">ID: HHS-24-118</span></div>
+              <h4 class="or-opp__title">HHS SBIR — Digital Healthcare</h4>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$314K</span><span class="or-opp__meta">Deadline: Sep 5</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
+          </div>
+        </div>
+        </button>
+        <div class="or-opp__body" id="opp-hhs-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div><h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5><ul class="or-opp__list"><li>Digital health is a named priority area.</li><li>Award band overlaps your $500K–$2M need.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-error)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">warning</span>What could disqualify</h5><ul class="or-opp__list"><li>Ownership unconfirmed.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-caution-text)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">fact_check</span>What to verify</h5><ul class="or-opp__list"><li>FY2026 topic list still open to your area.</li></ul></div>
+        </div>
+        <div class="or-opp__foot"><span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 80 hours</span><div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight</button></div></div>
+      </article>
+
+      <article class="or-opp" data-expanded="false">
+        <button class="mk-opp__toggle" aria-expanded="false" aria-controls="opp-nih-body">
+        <div class="or-opp__head">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--caution">Verify eligibility</span><span class="or-opp__meta">ID: NIH-R41</span></div>
+              <h4 class="or-opp__title">NIH STTR Phase I (NINR)</h4>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$256K</span><span class="or-opp__meta">Deadline: Rolling</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
+          </div>
+        </div>
+        </button>
+        <div class="or-opp__body" id="opp-nih-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div><h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5><ul class="or-opp__list"><li>Digital health is a named priority area.</li><li>Award band overlaps your $500K–$2M need.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-error)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">warning</span>What could disqualify</h5><ul class="or-opp__list"><li>Ownership unconfirmed.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-caution-text)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">fact_check</span>What to verify</h5><ul class="or-opp__list"><li>FY2026 topic list still open to your area.</li></ul></div>
+        </div>
+        <div class="or-opp__foot"><span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 80 hours</span><div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight</button></div></div>
+      </article>
+
       <div class="or-card or-card--dashed">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
           <div>
@@ -274,16 +351,16 @@
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
       </div>
 
-      <div class="or-card">
-        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
-        <div class="or-timeline">
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
           <div class="or-timeline__rule"></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
       </div>
     </div>
   </div>
@@ -365,16 +442,16 @@
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
       </div>
 
-      <div class="or-card">
-        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
-        <div class="or-timeline">
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
           <div class="or-timeline__rule"></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
       </div>
     </div>
   </div>
@@ -471,16 +548,16 @@
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
       </div>
 
-      <div class="or-card">
-        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
-        <div class="or-timeline">
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
           <div class="or-timeline__rule"></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
       </div>
     </div>
   </div>
@@ -640,6 +717,27 @@
     const n = btns[(i + (e.key === "ArrowRight" ? 1 : btns.length - 1)) % btns.length];
     show(n.dataset.screen); n.focus();
   });
+  // Disclosure list: header row is the click target, chevron is the affordance,
+  // aria-expanded carries the state. Several may be open at once.
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest(".mk-opp__toggle");
+    if (!t) return;
+    const card = t.closest(".or-opp");
+    const open = card.dataset.expanded !== "true";
+    card.dataset.expanded = String(open);
+    t.setAttribute("aria-expanded", String(open));
+  });
+  const toggleAll = document.getElementById("toggle-all");
+  toggleAll.addEventListener("click", () => {
+    const cards = [...document.querySelectorAll("#screen-map .or-opp")];
+    const open = toggleAll.textContent.trim() === "Expand all";
+    for (const c of cards) {
+      c.dataset.expanded = String(open);
+      c.querySelector(".mk-opp__toggle").setAttribute("aria-expanded", String(open));
+    }
+    toggleAll.textContent = open ? "Collapse all" : "Expand all";
+  });
+
   const drawer = document.getElementById("drawer"), fab = document.getElementById("fab");
   function setDrawer(open) {
     drawer.hidden = !open; fab.hidden = open;
