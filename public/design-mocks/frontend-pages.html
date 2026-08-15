@@ -128,7 +128,7 @@
   [hidden] { display: none !important; }
 </style>
 </head>
-<body data-drawer="true">
+<body data-drawer="false">
 
 <div class="mk-banner">
   <b>MOCKUP · feat/frontend-pages</b>
@@ -273,6 +273,18 @@
         </div>
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
       </div>
+
+      <div class="or-card">
+        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
+        <div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
+      </div>
     </div>
   </div>
 </main>
@@ -351,6 +363,18 @@
           <label class="or-option"><input type="radio" name="own-p" /><span><span class="or-option__title">&gt;50% VC/PE Owned</span><span class="or-option__hint">Restricts some agencies</span></span></label>
         </div>
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
+      </div>
+
+      <div class="or-card">
+        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
+        <div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
       </div>
     </div>
   </div>
@@ -446,6 +470,18 @@
         </div>
         <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
       </div>
+
+      <div class="or-card">
+        <h3 style="margin:0 0 20px;padding-bottom:8px;border-bottom:1px solid var(--color-border-ice);font:600 16px/24px var(--font-headline);color:var(--color-text-deep)">Deadlines</h3>
+        <div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p>
+      </div>
     </div>
   </div>
 </main>
@@ -529,7 +565,7 @@
 </div><!-- /mk-scroll -->
 
 <!-- AssistantDrawer — screen-assistant-drawer.jsx, faithfully -->
-<aside class="mk-drawer" id="drawer" aria-label="Assistant">
+<aside class="mk-drawer" id="drawer" aria-label="Assistant" hidden>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:24px;border-bottom:1px solid var(--color-border-ice)">
     <h2 style="margin:0;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">Assistant</h2>
     <div style="display:flex;gap:4px">
@@ -579,7 +615,7 @@
   </div>
 </aside>
 
-<button class="or-btn or-btn--filled or-btn--pill mk-fab" id="fab" hidden>
+<button class="or-btn or-btn--filled or-btn--pill mk-fab" id="fab">
   <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">auto_awesome</span>Assistant
 </button>
 
