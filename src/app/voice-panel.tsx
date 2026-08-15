@@ -7,9 +7,11 @@
 // - The AGENT speaks first: a [SESSION STARTED] turn is injected on connect.
 // - analyze_company is intercepted CLIENT-SIDE: the tool returns
 //   "analysis_started" immediately and the real engine run streams in the
-//   background (driving the on-screen UI via onEngineEvent). Progress and
-//   results are queued as [ANALYSIS UPDATE] turns, flushed between model
-//   turns so the agent weaves them in naturally while it keeps interviewing.
+//   background (driving the on-screen UI via onEngineEvent). Interim state
+//   (screening done + askable questions) is appended as SILENT context
+//   (clientContent turnComplete:false — no model turn); only the final
+//   summary/error triggers ONE spoken turn. Both wait for a quiet seam,
+//   because any clientContent interrupts in-flight generation.
 // - answer_question is instant (incremental refine, no re-ranking). Answers
 //   given while ranking is still running are buffered and applied the
 //   moment the analysis lands.
@@ -19,6 +21,7 @@ import type { AnalyzeEvent, CompanyProfile, MatchReport } from "@/lib/types";
 import { formatUsdCompact } from "@/lib/engine/meter";
 import { profileReadiness } from "@/lib/engine/readiness";
 import { SYSTEM_INSTRUCTION, TOOL_DECLARATIONS } from "@/lib/voice/schema";
+import FieldWidget, { type WidgetAnswer } from "./components/field-widgets";
 
 type Status = "off" | "idle" | "connecting" | "live";
 type LogLine = { who: "you" | "radar" | "sys"; text: string };
@@ -46,6 +49,20 @@ type UiReport = MatchReport & { opportunities?: Record<string, { title: string }
 
 const usd = (n: number) => formatUsdCompact(n);
 
+/** On-screen phrasing for the widget stage, per askable field. */
+const WIDGET_QUESTIONS: Record<string, string> = {
+  location: "Where are you based? Tap your state",
+  capitalNeed: "How much funding are you looking for?",
+  employees: "How big is the team?",
+  productMaturity: "Where is the product today?",
+  annualRevenueUsd: "Roughly what's your annual revenue?",
+  majorityUsOwned: "Majority US-owned?",
+  hasActiveRnD: "Actively doing R&D?",
+  isForProfit: "For-profit company?",
+  isSmallBusiness: "Small business (SBA rules)?",
+  samRegistered: "Registered in SAM.gov?",
+};
+
 export default function VoicePanel({
   getProfile,
   getReport,
@@ -58,6 +75,8 @@ export default function VoicePanel({
   const [status, setStatus] = useState<Status>("off");
   const [err, setErr] = useState<string | null>(null);
   const [log, setLog] = useState<LogLine[]>([]);
+  /** Widget the agent pushed on screen via ask_with_widget (one at a time). */
+  const [stage, setStage] = useState<{ field: string; question: string } | null>(null);
 
   const wsRef = useRef<WebSocket | null>(null);
   const readyRef = useRef(false); // setupComplete received
@@ -69,9 +88,10 @@ export default function VoicePanel({
   const openLineRef = useRef<{ you: boolean; radar: boolean }>({ you: false, radar: false });
   // Background-analysis machinery
   const modelSpeakingRef = useRef(false);
-  const updatesRef = useRef<string[]>([]);
+  const updatesRef = useRef<{ text: string; speak: boolean }[]>([]);
   const analysisBusyRef = useRef(false);
-  const lastProgressAtRef = useRef(0);
+  const lastUserInputAtRef = useRef(0);
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingAnswersRef = useRef<{ field: string; answer: string }[]>([]);
 
   useEffect(() => {
@@ -88,12 +108,19 @@ export default function VoicePanel({
     setLog((l) => [...l, { who: "sys", text }]);
   }
 
-  /** Transcription arrives in fragments; extend the open line for that speaker. */
+  /** Transcription arrives in fragments; extend the open line for that
+   *  speaker. Fragments often omit the space at chunk boundaries ("looks
+   *  likeyour strongest") — glue with a space unless one side already has
+   *  whitespace or the fragment opens with punctuation. */
   function appendLine(who: "you" | "radar", text: string) {
     setLog((l) => {
       const i = l.length - 1;
-      if (openLineRef.current[who] && i >= 0 && l[i].who === who)
-        return [...l.slice(0, i), { who, text: l[i].text + text }];
+      if (openLineRef.current[who] && i >= 0 && l[i].who === who) {
+        const prev = l[i].text;
+        const glue =
+          prev && !/\s$/.test(prev) && !/^[\s.,!?;:%)\]'"’”—-]/.test(text) ? " " : "";
+        return [...l.slice(0, i), { who, text: prev + glue + text }];
+      }
       openLineRef.current[who] = true;
       return [...l, { who, text }];
     });
@@ -163,31 +190,65 @@ export default function VoicePanel({
     proc.connect(ctx.destination); // required for onaudioprocess to fire in Chrome
   }
 
-  // ---------- update queue (flushed between model turns) ----------
+  // ---------- update delivery: silent context vs. spoken turns ----------
+  //
+  // Live API semantics (verified against the docs):
+  // - clientContent with turnComplete:false is appended to the conversation
+  //   WITHOUT starting generation — silent context the model uses at its
+  //   next natural turn. With turnComplete:true it forces a model turn.
+  // - EITHER kind "will interrupt any current model generation", so all
+  //   updates go through the seam-guarded queue below, never directly.
 
-  function sendText(text: string) {
+  function sendContent(text: string, speak: boolean) {
     const ws = wsRef.current;
     if (!ws || ws.readyState !== WebSocket.OPEN || !readyRef.current) return false;
     ws.send(
       JSON.stringify({
-        clientContent: { turns: [{ role: "user", parts: [{ text }] }], turnComplete: true },
+        clientContent: { turns: [{ role: "user", parts: [{ text }] }], turnComplete: speak },
       }),
     );
     return true;
   }
 
-  function queueUpdate(text: string) {
-    updatesRef.current.push(text);
+  /** speak:false (default) = silent context; speak:true = one spoken turn. */
+  function queueUpdate(text: string, opts: { speak?: boolean } = {}) {
+    updatesRef.current.push({ text, speak: opts.speak ?? false });
     flushUpdates();
   }
 
+  /** Deliver queued updates at a quiet seam — model idle AND the founder not
+   *  mid-utterance. Silent items merge into one context-only append. A spoken
+   *  item (final summary / error) supersedes everything queued before it and
+   *  triggers exactly ONE model turn — this is what stops the old behavior of
+   *  the agent monologuing after every background event. */
   function flushUpdates() {
-    if (modelSpeakingRef.current || updatesRef.current.length === 0) return;
-    const items = updatesRef.current.splice(0);
-    const ok = sendText(
-      `[ANALYSIS UPDATE — system data, weave in naturally, never read verbatim]\n${items.join("\n")}`,
-    );
-    if (!ok) updatesRef.current.unshift(...items); // connection not ready — requeue
+    if (updatesRef.current.length === 0 || flushTimerRef.current) return;
+    flushTimerRef.current = setTimeout(() => {
+      flushTimerRef.current = null;
+      if (updatesRef.current.length === 0) return;
+      const quiet =
+        !modelSpeakingRef.current && Date.now() - lastUserInputAtRef.current > 1500;
+      if (!quiet) {
+        flushUpdates(); // try again at the next seam
+        return;
+      }
+      const items = updatesRef.current.splice(0);
+      const spoken = [...items].reverse().find((u) => u.speak);
+      const ok = spoken
+        ? sendContent(
+            // Pre-bracketed items (e.g. on-screen answer acks) carry their own
+            // framing; bare items get the analysis-results framing.
+            spoken.text.startsWith("[")
+              ? spoken.text
+              : `[ANALYSIS UPDATE — system data, not the founder speaking. Tell the founder these results now in ONE short conversational turn (top match + one number), then ask one question. Never say this bracketed note aloud, and never announce these same results again in later turns.]\n${spoken.text}`,
+            true,
+          )
+        : sendContent(
+            `[BACKGROUND CONTEXT — system data, not the founder speaking. Silent knowledge for you: use it when it helps the conversation. Never read it aloud as an announcement and never mention this note.]\n${items.map((u) => u.text).join("\n")}`,
+            false,
+          );
+      if (!ok) updatesRef.current.unshift(...items); // connection not ready — requeue
+    }, 700);
   }
 
   // ---------- background analysis ----------
@@ -274,37 +335,69 @@ export default function VoicePanel({
           if (ev.type === "questions" && !questionsSent) {
             questionsSent = true;
             const qs = ev.questions.map((q) => `${q.question} (${q.whyAsking})`).join(" | ");
+            // Silent context: the agent learns the questions and weaves them
+            // into its NEXT natural reply — no forced announcement.
             queueUpdate(
               `Screening done: ${ev.meter.unlockedCount} programs already eligible (${usd(ev.meter.unlockedUsd)}). ` +
-                `Ranking runs ~30s more. ` +
+                `Ranking runs ~30-60s more; final results will arrive separately. ` +
                 (qs
-                  ? `Interview questions you can ask RIGHT NOW while we wait: ${qs}`
-                  : `No open questions — make small talk about their plans until results land.`),
+                  ? `Eligibility questions worth asking while you wait: ${qs}`
+                  : `No open questions — keep the conversation on their plans until results land.`),
             );
-          } else if (ev.type === "activity") {
-            const m = ev.message.match(/Scored (\d+)\/(\d+) candidates — (\d+) matches/);
-            if (m && Date.now() - lastProgressAtRef.current > 9000) {
-              lastProgressAtRef.current = Date.now();
-              queueUpdate(`progress: ${m[3]} matches found so far (${m[1]}/${m[2]} scored)`);
-            }
           } else if (ev.type === "report") {
             finalReport = ev.report;
           } else if (ev.type === "error") {
-            queueUpdate(`Analysis FAILED (${ev.message}). Apologize briefly and offer to retry.`);
+            queueUpdate(`Analysis FAILED (${ev.message}). Apologize briefly and offer to retry.`, {
+              speak: true,
+            });
           }
         }
       }
       if (finalReport) {
         const after = await applyPendingAnswers(finalReport);
-        queueUpdate(finalSummary(after as UiReport));
+        queueUpdate(finalSummary(after as UiReport), { speak: true });
       }
     } catch (e) {
       queueUpdate(
         `Analysis failed (${e instanceof Error ? e.message : String(e)}). Apologize and offer to retry.`,
+        { speak: true },
       );
     } finally {
       analysisBusyRef.current = false;
     }
+  }
+
+  // ---------- on-screen widget answers (ask_with_widget) ----------
+
+  async function submitWidgetAnswer(ans: WidgetAnswer) {
+    setStage(null);
+    pushSys(`⊞ tapped: ${ans.field} = ${ans.sayAs}`);
+    // Same routing as a spoken answer: buffer while ranking has no report yet,
+    // otherwise instant refine via the tools route.
+    if (analysisBusyRef.current && !getReport()) {
+      pendingAnswersRef.current.push({ field: ans.field, answer: String(ans.value) });
+    } else {
+      try {
+        const res = await fetch("/api/voice/tools", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: "answer_question",
+            args: { field: ans.field, answer: String(ans.value) },
+            profile: getProfile(),
+            priorReport: getReport(),
+          }),
+        });
+        const d = (await res.json()) as { report?: MatchReport };
+        if (d.report) onEngineEvent({ type: "report", report: d.report });
+      } catch {}
+    }
+    // One short spoken acknowledgment at the next quiet seam (pre-bracketed
+    // so flushUpdates doesn't wrap it in results framing).
+    queueUpdate(
+      `[FOUNDER ANSWERED ON SCREEN — system data, never say this note aloud. They tapped: ${ans.field} = ${ans.sayAs}. It is ALREADY recorded. Acknowledge in a few words and continue the conversation; do not re-ask it or call answer_question for it.]`,
+      { speak: true },
+    );
   }
 
   // ---------- tool calls ----------
@@ -312,6 +405,27 @@ export default function VoicePanel({
   async function handleToolCalls(calls: FunctionCall[]) {
     const functionResponses = [];
     for (const c of calls) {
+      // ask_with_widget: render the tap-to-answer control locally.
+      if (c.name === "ask_with_widget") {
+        const field = String(c.args?.field ?? "");
+        if (field) {
+          setStage({ field, question: WIDGET_QUESTIONS[field] ?? "Tap to answer" });
+          pushSys(`⊞ widget: ${field}`);
+        }
+        functionResponses.push({
+          id: c.id,
+          name: c.name,
+          response: {
+            result: field
+              ? {
+                  status: "widget_shown",
+                  note: "On screen. The founder may tap it (you'll get [FOUNDER ANSWERED ON SCREEN]) or answer aloud — handle either.",
+                }
+              : { error: "field is required" },
+          },
+        });
+        continue;
+      }
       // analyze_company: fire-and-return — the engine streams in the background.
       if (c.name === "analyze_company") {
         const description = String(c.args?.description ?? "").trim();
@@ -350,6 +464,10 @@ export default function VoicePanel({
         });
         continue;
       }
+      // Answered aloud — retire any widget waiting on the same field.
+      if (c.name === "answer_question") {
+        setStage((s) => (s && s.field === String(c.args?.field ?? "") ? null : s));
+      }
       pushSys(`⚙ ${c.name}`);
       let data: { result?: unknown; report?: MatchReport };
       try {
@@ -384,8 +502,9 @@ export default function VoicePanel({
       readyRef.current = true;
       setStatus("live");
       pushSys("connected — Radar speaks first");
-      // The agent greets first: hand it an opening turn.
-      sendText("[SESSION STARTED] The founder just joined the voice session. Greet them now.");
+      // The agent greets first: hand it an opening turn (model is idle at
+      // setup, so a direct triggered send is safe here).
+      sendContent("[SESSION STARTED] The founder just joined the voice session. Greet them now.", true);
     }
     const sc = msg.serverContent;
     if (sc) {
@@ -397,7 +516,10 @@ export default function VoicePanel({
       for (const p of sc.modelTurn?.parts ?? []) {
         if (p.inlineData?.data) playChunk(p.inlineData.data);
       }
-      if (sc.inputTranscription?.text) appendLine("you", sc.inputTranscription.text);
+      if (sc.inputTranscription?.text) {
+        lastUserInputAtRef.current = Date.now(); // founder has the floor — hold updates
+        appendLine("you", sc.inputTranscription.text);
+      }
       if (sc.outputTranscription?.text) appendLine("radar", sc.outputTranscription.text);
       if (sc.turnComplete) {
         openLineRef.current = { you: false, radar: false };
@@ -461,6 +583,12 @@ export default function VoicePanel({
   function stop() {
     readyRef.current = false;
     modelSpeakingRef.current = false;
+    setStage(null);
+    if (flushTimerRef.current) {
+      clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
+    }
+    updatesRef.current = [];
     const ws = wsRef.current;
     wsRef.current = null;
     ws?.close();
@@ -477,37 +605,46 @@ export default function VoicePanel({
 
   const busy = status === "connecting" || status === "live";
   return (
-    <section className="space-y-2 rounded-lg border border-neutral-800 bg-neutral-900 p-3">
+    <section className="card space-y-3 p-6">
       <div className="flex flex-wrap items-center gap-3">
         <button
           onClick={busy ? stop : () => void start()}
-          className={`rounded-lg px-4 py-1.5 text-sm font-semibold ${
+          className={`rounded-full px-5 py-2.5 text-[14px] font-semibold transition-colors ${
             busy
-              ? "border border-red-500/50 text-red-400 hover:bg-red-500/10"
-              : "border border-neutral-700 hover:bg-neutral-800"
+              ? "border border-line bg-card text-risk hover:bg-risk-soft"
+              : "bg-brand text-white shadow-sm hover:bg-brand-strong"
           }`}
         >
-          {status === "live" ? "■ End voice" : status === "connecting" ? "Connecting…" : "🎤 Voice mode"}
+          {status === "live" ? "Stop" : status === "connecting" ? "Connecting…" : "Start voice"}
         </button>
         {status === "live" && (
-          <span className="flex items-center gap-1.5 text-xs text-green-400">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
-            live — Radar will greet you
+          <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-good">
+            <span className="h-2 w-2 animate-pulse rounded-full bg-good" />
+            Live — Radar will greet you
           </span>
         )}
-        {err && <span className="text-xs text-red-400">{err}</span>}
+        {err && <span className="text-[12.5px] text-risk">{err}</span>}
       </div>
+      {stage && status === "live" && (
+        <div className="card-in space-y-2 rounded-2xl bg-soft/70 p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+            Radar is asking — tap or just say it
+          </p>
+          <p className="text-[14px] font-semibold text-ink">{stage.question}</p>
+          <FieldWidget field={stage.field} onPick={(a) => void submitWidgetAnswer(a)} />
+        </div>
+      )}
       {log.length > 0 && (
-        <div className="max-h-40 space-y-1 overflow-y-auto border-t border-neutral-800 pt-2 text-xs">
+        <div className="max-h-40 space-y-1.5 overflow-y-auto border-t border-hairline pt-3 text-[12.5px]">
           {log.map((line, i) => (
             <p
               key={i}
               className={
                 line.who === "you"
-                  ? "text-neutral-300"
+                  ? "w-fit max-w-[92%] rounded-xl bg-surface-low px-3 py-1.5 text-ink"
                   : line.who === "radar"
-                    ? "text-blue-300"
-                    : "font-mono text-neutral-500"
+                    ? "w-fit max-w-[92%] rounded-xl bg-soft px-3 py-1.5 text-ink"
+                    : "text-[12px] text-faint"
               }
             >
               {line.who === "you" ? "You: " : line.who === "radar" ? "Radar: " : ""}

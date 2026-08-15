@@ -42,28 +42,33 @@ export default function SaveMonitor({ profile }: { profile: CompanyProfile }) {
   }
 
   return (
-    <div className="mt-6 rounded border border-sky-900 bg-sky-950/40 p-4">
-      <div className="font-medium text-sky-200">📡 Keep watching for me</div>
-      <p className="mt-1 text-sm text-neutral-400">
+    <div className="card mt-6 p-6">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-faint">
+        Standing watch
+      </p>
+      <div className="mt-1 font-display text-[17px] font-bold tracking-tight text-ink">
+        Keep watching for me
+      </div>
+      <p className="mt-1 text-[13.5px] text-muted">
         Save this profile and Opportunity Radar will screen every newly posted opportunity
         against it — you get notified when something fits. No more re-running searches.
       </p>
       {state !== "done" ? (
         <div className="mt-3 flex flex-wrap gap-2">
           <input
-            className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm"
+            className="rounded-xl border border-line bg-card px-4 py-2.5 text-[14px] text-ink placeholder:text-faint focus:border-accent focus:outline-none"
             placeholder="Company name"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <input
-            className="rounded border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm"
+            className="rounded-xl border border-line bg-card px-4 py-2.5 text-[14px] text-ink placeholder:text-faint focus:border-accent focus:outline-none"
             placeholder="Email for alerts (optional)"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
           <button
-            className="rounded bg-sky-700 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+            className="rounded-xl bg-brand px-5 py-2.5 text-[14px] font-semibold text-white shadow-sm transition-colors hover:bg-brand-strong disabled:opacity-50"
             disabled={!name.trim() || state === "saving"}
             onClick={save}
           >
@@ -72,7 +77,7 @@ export default function SaveMonitor({ profile }: { profile: CompanyProfile }) {
         </div>
       ) : null}
       {message && (
-        <p className={`mt-2 text-sm ${state === "error" ? "text-red-400" : "text-emerald-300"}`}>
+        <p className={`mt-2 text-[13.5px] ${state === "error" ? "text-risk" : "text-good"}`}>
           {message}
         </p>
       )}

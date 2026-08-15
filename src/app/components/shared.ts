@@ -8,6 +8,10 @@ export type UiReport = MatchReport & { opportunities?: Record<string, Opportunit
 
 export type QuickReply = { label: string; message: string };
 
+/** The agent's pointing power: which card to spotlight on the canvas.
+ *  nonce changes on every point so the same card can be pointed at twice. */
+export type Spotlight = { id: string; nonce: number };
+
 /** Null-guarded wrapper around the engine's shared USD formatter. */
 export function fmtUsd(n: number | null | undefined): string {
   return n == null ? "—" : formatUsdCompact(n);
@@ -18,8 +22,29 @@ export function daysUntil(iso: string | null): number | null {
   return Math.ceil((new Date(iso).getTime() - Date.now()) / 86400000);
 }
 
-export const TIERS: { tier: FitTier; label: string; badge: string }[] = [
-  { tier: "likely_fit", label: "Likely fit", badge: "border-green-500/50 bg-green-500/10 text-green-400" },
-  { tier: "verify_eligibility", label: "Verify eligibility", badge: "border-yellow-500/50 bg-yellow-500/10 text-yellow-400" },
-  { tier: "adjacent", label: "Adjacent", badge: "border-orange-500/50 bg-orange-500/10 text-orange-400" },
+/** Tier system (Federal Catalyst chips): green = money-grade fit, amber =
+ *  attention needed, neutral = adjacent. Chip styles + legacy left rail. */
+export const TIERS: { tier: FitTier; label: string; badge: string; rail: string }[] = [
+  {
+    tier: "likely_fit",
+    label: "Likely fit",
+    badge: "bg-good-soft text-good",
+    rail: "border-l-good",
+  },
+  {
+    tier: "verify_eligibility",
+    label: "Verify eligibility",
+    badge: "bg-warn-soft text-warn",
+    rail: "border-l-warn",
+  },
+  {
+    tier: "adjacent",
+    label: "Adjacent",
+    badge: "bg-surface-variant text-muted",
+    rail: "border-l-line",
+  },
 ];
+
+export function tierRail(tier: FitTier): string {
+  return TIERS.find((t) => t.tier === tier)?.rail ?? "border-l-hairline";
+}
