@@ -52,6 +52,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${hanken.variable} ${inter.variable} ${jbMono.variable} h-full antialiased`}
     >
+      <head>
+        {/* Material Symbols Outlined — the kit's only icon source. Loaded from
+            Google rather than vendored: the variable woff2 is 3.9 MB. */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        />
+      </head>
       <body className="flex min-h-full flex-col">
         <header className="sticky top-0 z-30 border-b border-hairline bg-card shadow-sm">
           <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center gap-4 px-4 sm:gap-8 sm:px-6 lg:px-10">

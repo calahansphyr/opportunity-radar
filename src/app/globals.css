@@ -1,53 +1,59 @@
 @import "tailwindcss";
+@import "./styles/catalyst-kit.css";
 
-/* ============================================================
-   Opportunity Radar — "Federal Catalyst, warmed up."
-   Kit structure, Halda-grade craft: warm paper canvas, deep
-   federal navy ink, one confident blue for action, soft lush
-   card shadows, generous radii. Mono is for NUMBERS ONLY
-   (amounts, dates, counts, IDs) — never labels or buttons.
-   ============================================================ */
+/* ============================================================================
+   Opportunity Radar — app layer.
 
+   The design system itself is VENDORED in styles/catalyst-kit.css (Federal
+   Catalyst UI Kit). This file does three things and nothing else:
+
+     1. Bridges the kit's tokens into Tailwind utility names (@theme below), so
+        `bg-card` / `text-ink` / `border-hairline` resolve to kit values.
+     2. Sets page-level defaults (body, headings, focus, scrollbars).
+     3. Holds the app's own motion primitives — shimmer, radar scope, card
+        materialize, agent spotlight — which the kit has no equivalent for.
+
+   Never invent a color here. If you need one, it exists in catalyst-kit.css.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Tailwind bridge. Values are literal because two names (`surface`,
+   `surface-variant`) collide with kit token names, and a var() indirection
+   would make those self-referential. Each line records the kit token it came
+   from — RE-SYNC THIS BLOCK if catalyst-kit.css is ever regenerated.
+   ---------------------------------------------------------------------------- */
 @theme inline {
-  /* canvas + surfaces */
-  --color-bg: #f6f4ef;
-  --color-card: #ffffff;
-  --color-surface-low: #f1efe9;
-  --color-surface: #eae7df;
-  --color-surface-high: #e3dfd5;
-  --color-surface-variant: #e3dfd5;
-  /* one warm-navy line everywhere */
-  --color-hairline: rgba(18, 40, 63, 0.12);
-  --color-line: rgba(18, 40, 63, 0.18);
+  /* surfaces */
+  --color-bg: #f7f9fb; /* kit --color-background */
+  --color-card: #ffffff; /* kit --color-surface-container-lowest */
+  --color-surface-low: #f2f4f6; /* kit --color-surface-container-low */
+  --color-surface: #eceef0; /* kit --color-surface-container */
+  --color-surface-high: #e6e8ea; /* kit --color-surface-container-high */
+  --color-surface-variant: #e0e3e5; /* kit --color-surface-variant */
+  /* lines */
+  --color-hairline: rgba(3, 105, 161, 0.12); /* kit --color-border-ice */
+  --color-line: #c0c7d1; /* kit --color-outline-variant */
   /* text */
-  --color-ink: #12283f;
-  --color-muted: #47617a;
-  --color-faint: #7d90a5;
-  /* brand — confident federal blue */
-  --color-brand: #155e9e;
-  --color-brand-strong: #0f4173;
-  --color-accent: #1a74c2;
-  --color-soft: #e8f1f9;
-  --color-brand-fixed: #cfe5f6;
-  /* status */
-  --color-good: #177a53;
-  --color-good-soft: #e2f3ea;
-  --color-warn: #a06514;
-  --color-warn-soft: #fdf0d9;
-  --color-risk: #b3402f;
-  --color-risk-soft: #fbe9e5;
-  /* funding twin */
-  --color-twin: #0e6f8a;
-  --color-twin-soft: #d8eef5;
-  /* legacy aliases — degrade to sane colors; migrate on touch */
-  --color-paper: #12283f;
-  --color-panel: #ffffff;
-  --color-panel-2: #f1efe9;
-  --color-brass: #a06514;
-  --color-brass-bright: #b8791f;
-  --color-treasury: #177a53;
-  --color-signal: #b3402f;
-  /* type */
+  --color-ink: #0f172a; /* kit --color-text-deep */
+  --color-muted: #40474f; /* kit --color-on-surface-variant */
+  --color-faint: #707881; /* kit --color-outline */
+  /* brand — one blue, the kit's cool federal primary */
+  --color-brand: #00507d; /* kit --color-primary */
+  --color-brand-strong: #004b74; /* kit --color-on-primary-fixed-variant */
+  --color-accent: #006399; /* kit --color-surface-tint */
+  --color-soft: #cde5ff; /* kit --color-primary-fixed */
+  --color-brand-fixed: #94ccff; /* kit --color-primary-fixed-dim */
+  /* status — these mean status and nothing else */
+  --color-good: #006c4a; /* kit --color-fit-strong */
+  --color-good-soft: rgba(0, 108, 74, 0.1); /* kit --color-fit-strong-surface */
+  --color-warn: #92400e; /* kit --color-caution-text */
+  --color-warn-soft: #fef3c7; /* kit --color-caution-surface */
+  --color-risk: #ba1a1a; /* kit --color-error */
+  --color-risk-soft: #ffdad6; /* kit --color-error-container */
+  /* funding twin — the kit's cyan secondary */
+  --color-twin: #006686; /* kit --color-secondary */
+  --color-twin-soft: #c0e8ff; /* kit --color-secondary-fixed */
+  /* type — same three families the kit names */
   --font-display: var(--font-hanken);
   --font-sans: var(--font-inter);
   --font-mono: var(--font-jbmono);
@@ -58,9 +64,9 @@
 }
 
 body {
-  background-color: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
   font-size: 15px;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -70,19 +76,19 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: var(--font-display), system-ui, sans-serif;
+  font-family: var(--font-headline);
   letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
-/* THE card. One elevation language everywhere. */
+/* THE card — the kit's `.or-card` without its padding, since pages set their
+   own. Keep these two in lockstep; do not retune one alone. */
 .card {
-  background: var(--color-card);
-  border: 1px solid var(--color-hairline);
-  border-radius: 1.25rem;
-  box-shadow:
-    0 1px 2px rgba(18, 40, 63, 0.04),
-    0 12px 30px rgba(18, 40, 63, 0.07);
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--color-border-ice);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Numbers read as ledger entries — tabular everywhere they appear. */
@@ -97,12 +103,12 @@ pre {
 }
 
 ::selection {
-  background: var(--color-brand-fixed);
-  color: var(--color-brand-strong);
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-surface-tint);
   outline-offset: 2px;
   border-radius: 6px;
 }
@@ -112,13 +118,13 @@ pre {
   height: 9px;
 }
 *::-webkit-scrollbar-thumb {
-  background: rgba(18, 40, 63, 0.18);
+  background: rgba(15, 23, 42, 0.18);
   border-radius: 999px;
   border: 2px solid transparent;
   background-clip: content-box;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(18, 40, 63, 0.34);
+  background: rgba(15, 23, 42, 0.34);
   background-clip: content-box;
 }
 
@@ -186,13 +192,13 @@ pre {
 @keyframes card-spotlight {
   0% {
     box-shadow:
-      0 0 0 2px var(--color-accent),
-      0 0 28px rgba(26, 116, 194, 0.3);
+      0 0 0 2px var(--color-surface-tint),
+      0 0 28px rgba(0, 99, 153, 0.3);
   }
   100% {
     box-shadow:
-      0 0 0 2px rgba(26, 116, 194, 0),
-      0 0 0 rgba(26, 116, 194, 0);
+      0 0 0 2px rgba(0, 99, 153, 0),
+      0 0 0 rgba(0, 99, 153, 0);
   }
 }
 .card-spotlight {

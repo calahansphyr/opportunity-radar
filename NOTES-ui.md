@@ -83,9 +83,22 @@ styling ANYTHING — tokens, Tailwind recipes, and rules live there.
 ## Federal Catalyst adoption (2026-08-15 late) — the teammate's UI, not just its skin
 
 Canonical references: design/claude-design/*.html (PR #1 screens) + the
-"Federal Catalyst UI Kit" (Josh's file; multi-tab React bundle). globals.css
-tokens are now the kit's EXACT hexes; fonts Hanken Grotesk / Inter /
-JetBrains Mono.
+"Federal Catalyst UI Kit" (Josh's file; multi-tab React bundle).
+
+CORRECTION (2026-08-15, feat/frontend-pages): this section used to claim
+"globals.css tokens are now the kit's EXACT hexes." That was never true — the
+warm-paper pass (65eebff) had globals.css on #f6f4ef/#155e9e while the kit is
+#f7f9fb/#00507d. The kit is now genuinely VENDORED — see DESIGN-SPEC.md.
+src/app/styles/catalyst-kit.css holds its tokens and .or-* CSS verbatim;
+src/app/components/ui/ holds its 21 React components; the @theme block in
+globals.css bridges the old Tailwind names onto kit values, so bg-card /
+text-ink / border-hairline still work and now resolve cool, not warm.
+Fonts (Hanken Grotesk / Inter / JetBrains Mono) always did match.
+
+The region files below still hand-roll Tailwind. They render correctly on the
+kit palette via the bridge, but they are NOT yet built from kit components —
+porting them to <OpportunityCard/>, <Timeline/>, <StepProgress/> etc. is
+outstanding work, not something already done.
 
 Opportunity Map page = kit 12-col anatomy:
 - col 1-3: profile-card.tsx (kit founder dossier: completeness bar, initials
