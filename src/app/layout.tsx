@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Hanken_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import TopNav from "./components/side-nav";
-import { Wordmark } from "./components/brand";
-import { countBySource } from "@/lib/engine/retrieve";
+import AssistantDrawer from "./components/dashboard/assistant-drawer";
+import { FIXTURE_QUICK_REPLIES } from "./components/dashboard/fixture";
 
 // Type system (Federal Catalyst kit): Hanken Grotesk headlines,
 // Inter body, JetBrains Mono labels/data/buttons.
@@ -30,23 +29,14 @@ export const metadata: Metadata = {
   description: "Match your startup to US government funding — honestly.",
 };
 
-/** Live program count for the navbar; falls back quietly if the DB is cold. */
-function programCount(): string {
-  try {
-    const counts = countBySource();
-    const total = Object.values(counts).reduce((a, n) => a + n, 0);
-    if (total > 0) return total.toLocaleString("en-US");
-  } catch {
-    // ingest hasn't run — show nothing rather than a made-up number
-  }
-  return "";
-}
-
-// App shell (Federal Catalyst): white top navbar — wordmark in the federal
-// blue, section tabs with the active underline, live monitoring count on the
-// right. Pages render full-width below and compose their own columns.
+// App shell — the map chrome from
+// design/claude-design/kit-source/screen-opportunity-map.jsx: an 80px solid
+// `.or-nav` with the brand left, five destinations, icon buttons and the CTA
+// right. NO side nav; pages centre their own 1440 column via `.app-page`.
+//
+// The assistant drawer is mounted app-wide and closed by default, so it is
+// reachable from every page and its slide transition survives navigation.
 export default function RootLayout({ children }: LayoutProps<"/">) {
-  const count = programCount();
   return (
     <html
       lang="en"
@@ -63,21 +53,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <header className="sticky top-0 z-30 border-b border-hairline bg-card shadow-sm">
-          <div className="mx-auto flex h-16 w-full max-w-[1440px] items-center gap-4 px-4 sm:gap-8 sm:px-6 lg:px-10">
-            <Link href="/" className="shrink-0">
-              <Wordmark />
-            </Link>
-            <TopNav />
-            <div className="flex-1" />
-            {count && (
-              <p className="hidden items-center gap-2 rounded-full bg-good-soft px-3.5 py-1.5 text-[12.5px] font-medium text-good md:flex">
-                <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-good" />
-                Monitoring <span className="tnum font-semibold">{count}</span> programs
-              </p>
-            )}
-          </div>
-        </header>
+        <TopNav />
 
         <div className="flex-1">{children}</div>
 
@@ -90,6 +66,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <p>Honest matches only — we say so when there&apos;s no fit.</p>
           </div>
         </footer>
+
+        <AssistantDrawer suggestions={FIXTURE_QUICK_REPLIES} />
       </body>
     </html>
   );

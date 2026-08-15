@@ -471,3 +471,85 @@
     transition-duration: 0.001ms !important;
   }
 }
+
+/* ============================================================================
+   ADDITIONS (post-vendor) — kit rule 6: "if a screen needs a look the kit
+   lacks, add a rule to the kit; do not one-off it on a component."
+
+   These are NEW rules only. No vendored value above this line was edited, so
+   this file still diffs cleanly against the bundle. Both were invented locally
+   by public/design-mocks/frontend-pages.html (as .mk-cardhead and .mk-meter)
+   and are promoted here because they are generic card furniture, not
+   Dashboard-specific layout. Page-level classes stay in globals.css.
+   ============================================================================ */
+
+/* A1. Card header band. The kit has no card-header component, so every rail
+   card invented its own heading and they stopped reading as siblings. Pairs
+   with .or-card--flush, which drops the card's own padding. */
+.or-card__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-ice);
+  font-family: var(--font-headline);
+  font-size: var(--text-body-md-size);
+  line-height: var(--text-body-md-line);
+  font-weight: 600;
+  color: var(--color-text-deep);
+}
+.or-card__body {
+  padding: 16px;
+}
+
+/* A2. Labelled completeness meter. `.or-progress--top` is a 4px hairline
+   pinned to the card edge, which reads as card trim rather than as data; a
+   meter that carries a number needs its value stated. Sits at the FOOT of a
+   card, under a rule. */
+.or-meter {
+  width: 100%;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border-ice);
+}
+.or-meter__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.or-meter__label {
+  font-family: var(--font-label);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-line);
+  letter-spacing: var(--text-label-sm-tracking);
+  font-weight: var(--text-label-sm-weight);
+  color: var(--color-outline);
+}
+.or-meter__value {
+  font-family: var(--font-headline);
+  font-size: var(--text-headline-md-size);
+  line-height: var(--text-headline-md-line);
+  font-weight: 700;
+  color: var(--color-primary);
+}
+.or-meter__track {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-surface-container);
+  overflow: hidden;
+}
+.or-meter__fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+}
+.or-meter__note {
+  margin: 8px 0 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-on-surface-variant);
+  text-align: left;
+}
