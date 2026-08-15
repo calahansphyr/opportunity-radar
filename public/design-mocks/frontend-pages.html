@@ -63,6 +63,51 @@
   }
   .mk-fab { position: fixed; right: 24px; bottom: 24px; z-index: 60; }
 
+  /* Nav overflow guard. .or-nav pads 64px a side and never shrinks its link
+     row, so below ~1500px the right-hand group (icons + Apply Now) was being
+     pushed past the viewport edge and clipped. Let the brand/links group be
+     the thing that gives way; keep the actions group intact. */
+  .or-nav { gap: 16px; }
+  .mk-navleft { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .mk-navleft::-webkit-scrollbar { display: none; }
+  .or-nav__brand { white-space: nowrap; }
+  .or-nav__links { flex-wrap: nowrap; }
+  .or-nav__link { white-space: nowrap; }
+  .mk-navright { flex: none; }
+  @media (max-width: 1200px) {
+    .or-nav { padding: 0 var(--space-md); }
+    main.mk-page { padding-left: var(--space-md); padding-right: var(--space-md); }
+    body[data-drawer="true"] main.mk-page { padding-right: var(--space-md); }
+  }
+
+  /* Page header above the grid, so all three columns start level.
+     Previously the heading lived inside the centre column, which pushed its
+     first card ~48px below the side rails. */
+  .mk-pagehead {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--color-border-ice);
+  }
+
+  /* Completeness meter — sits at the FOOT of the dossier card, under a rule,
+     with its number stated. The kit's `or-progress--top` hairline reads as
+     card trim rather than data. */
+  .mk-meter { width: 100%; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border-ice); }
+  .mk-meter__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .mk-meter__value { font: 700 24px/28px var(--font-headline); color: var(--color-primary); }
+  .mk-meter__track { height: 8px; border-radius: 9999px; background: var(--color-surface-container); overflow: hidden; }
+  .mk-meter__fill { height: 100%; border-radius: 9999px; background: var(--color-primary); }
+  .mk-meter__note { margin: 8px 0 0; font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant); text-align: left; }
+
+  /* Stacked proportional bar — for three numbers that are parts of one whole
+     (money held: settleable / unparseable / blocked). */
+  .mk-stackbar { display: flex; height: 10px; border-radius: 9999px; overflow: hidden; gap: 2px; background: var(--color-surface-container); }
+  .mk-stackbar > span { height: 100%; }
+  .mk-legend { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; width: 100%; }
+  .mk-legend__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mk-legend__key { display: flex; align-items: center; gap: 8px; font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant); }
+  .mk-legend__dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
   .mk-h3 { margin: 0; font: 600 24px/32px var(--font-headline); color: var(--color-text-deep); }
   .mk-h4 { margin: 0 0 24px; font: 600 20px/28px var(--font-headline); color: var(--color-text-deep); }
   .mk-label { font: 500 12px/14px var(--font-label); letter-spacing: .05em; color: var(--color-outline); }
@@ -85,7 +130,7 @@
 
 <!-- Plain .or-nav — the map's nav is solid; glass is workspace chrome. -->
 <nav class="or-nav">
-  <div style="display:flex;align-items:center;gap:var(--space-lg)">
+  <div class="mk-navleft" style="display:flex;align-items:center;gap:var(--space-lg)">
     <h1 class="or-nav__brand">Federal Catalyst</h1>
     <div class="or-nav__links" id="tabs" role="tablist" aria-label="Screens">
       <button type="button" role="tab" aria-selected="true" class="or-nav__link or-nav__link--active" data-screen="map">Opportunity Map</button>
@@ -94,7 +139,7 @@
       <button type="button" role="tab" aria-selected="false" class="or-nav__link" data-screen="utah">Utah View</button>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:var(--space-md)">
+  <div class="mk-navright" style="display:flex;align-items:center;gap:var(--space-md)">
     <div style="display:flex;gap:var(--space-sm)">
       <button class="or-iconbtn" aria-label="Notifications"><span class="material-symbols-outlined" aria-hidden="true">notifications</span></button>
       <button class="or-iconbtn" aria-label="Help"><span class="material-symbols-outlined" aria-hidden="true">help</span></button>
@@ -108,12 +153,16 @@
 
 <!-- ===================== 1 · OPPORTUNITY MAP (canonical) ==================== -->
 <main class="mk-page" id="screen-map" role="tabpanel" aria-label="Opportunity Map">
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Top Matches</h2>
+    <span class="mk-label">1,703 live · 412 relevant awards</span>
+  </div>
+
   <div class="mk-grid">
 
     <!-- span 3 — FounderProfile + ActionPlan, exactly as the screen composes them -->
     <div class="mk-c3">
       <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
-        <div class="or-progress or-progress--top" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="Profile completeness"><div class="or-progress__fill" style="width:75%"></div></div>
         <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
         <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">NuraHealth AI</h3>
         <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Utah, USA</span>
@@ -123,6 +172,11 @@
           <div class="or-kv"><span class="or-kv__label">ARR</span><span class="or-kv__value">$1M</span></div>
           <div class="or-kv"><span class="or-kv__label">Raised</span><span class="or-kv__value">$2.5M</span></div>
           <div class="or-kv or-kv--danger"><span class="or-kv__label"><span class="or-ping" aria-hidden="true"><span></span><span></span></span>Ownership</span><span class="or-kv__value">Unknown</span></div>
+        </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">PROFILE COMPLETE</span><span class="mk-meter__value">75%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="PROFILE COMPLETE"><div class="mk-meter__fill" style="width:75%"></div></div>
+          <p class="mk-meter__note">3 of 4 key facts answered. Ownership is the one still blocking SBIR programs.</p>
         </div>
       </div>
 
@@ -139,10 +193,6 @@
 
     <!-- span 6 — Top Matches -->
     <div class="mk-c6">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
-        <h3 class="mk-h3">Top Matches</h3>
-        <span class="mk-label">1,703 live · 412 relevant awards</span>
-      </div>
 
       <article class="or-opp">
         <div class="or-opp__head">
@@ -206,8 +256,7 @@
 
     <!-- span 3 — UnlockResults, the canonical right rail -->
     <div class="mk-c3">
-      <div class="or-card" style="overflow:hidden;position:relative">
-        <div style="position:absolute;top:0;right:0;padding:16px;opacity:.1;pointer-events:none" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:64px">lock_open</span></div>
+      <div class="or-card">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -223,10 +272,14 @@
 
 <!-- ============================ 2 · PROFILE ============================== -->
 <main class="mk-page" id="screen-profile" role="tabpanel" aria-label="Profile" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Company Profile</h2>
+    <span class="mk-label">2 required · 68% complete</span>
+  </div>
+
   <div class="mk-grid">
     <div class="mk-c3">
       <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
-        <div class="or-progress or-progress--top" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100" aria-label="Profile completeness"><div class="or-progress__fill" style="width:68%"></div></div>
         <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
         <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">NuraHealth AI</h3>
         <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Utah, USA</span>
@@ -237,14 +290,15 @@
           <div class="or-kv"><span class="or-kv__label">Raised</span><span class="or-kv__value">$2.5M</span></div>
           <div class="or-kv or-kv--danger"><span class="or-kv__label"><span class="or-ping" aria-hidden="true"><span></span><span></span></span>Ownership</span><span class="or-kv__value">Unknown</span></div>
         </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">PROFILE COMPLETE</span><span class="mk-meter__value">68%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100" aria-label="PROFILE COMPLETE"><div class="mk-meter__fill" style="width:68%"></div></div>
+          <p class="mk-meter__note">2 required answers left before we can rank anything.</p>
+        </div>
       </div>
     </div>
 
     <div class="mk-c6">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
-        <h3 class="mk-h3">Company Profile</h3>
-        <span class="mk-label">2 required · 68% complete</span>
-      </div>
 
       <div class="or-card or-card--sunken" style="padding:12px 16px">
         <div class="mk-row" style="gap:16px">
@@ -281,8 +335,7 @@
     </div>
 
     <div class="mk-c3">
-      <div class="or-card" style="overflow:hidden;position:relative">
-        <div style="position:absolute;top:0;right:0;padding:16px;opacity:.1;pointer-events:none" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:64px">lock_open</span></div>
+      <div class="or-card">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Two required basics are missing, so ranking is held. Early numbers inflate and then collapse — we'd rather wait.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -298,27 +351,35 @@
 
 <!-- =========================== 3 · SCREENING ============================= -->
 <main class="mk-page" id="screen-screening" role="tabpanel" aria-label="Screening" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Screening</h2>
+    <span class="mk-label">4,595 screened · 9 rules</span>
+  </div>
+
   <div class="mk-grid">
     <div class="mk-c3">
       <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
-        <div class="or-progress or-progress--top" role="progressbar" aria-valuenow="55" aria-valuemin="0" aria-valuemax="100" aria-label="Screens cleared"><div class="or-progress__fill" style="width:55%"></div></div>
         <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
         <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">5 of 9 cleared</h3>
         <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Federal screens</span>
         <span class="or-badge or-badge--caution" style="width:100%;justify-content:center;margin-bottom:24px"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">info</span>2 answers from ranking</span>
-        <div style="width:100%;display:flex;flex-direction:column;gap:8px">
-          <div class="or-kv"><span class="or-kv__label">You can settle</span><span class="or-kv__value">$1.0M</span></div>
-          <div class="or-kv"><span class="or-kv__label">Only the notice can</span><span class="or-kv__value">$1.4M</span></div>
-          <div class="or-kv"><span class="or-kv__label">Blocked</span><span class="or-kv__value">3 programs</span></div>
+        <div class="mk-meter" style="margin-top:0;padding-top:0;border-top:0">
+          <div class="mk-meter__head"><span class="mk-label">MONEY CURRENTLY HELD</span><span class="mk-meter__value">$2.4M</span></div>
+          <div class="mk-stackbar" role="img" aria-label="Of $2.4M held: $1.0M you can settle, $1.4M only the notice can settle, plus 3 blocked programs">
+            <span style="width:42%;background:var(--color-caution-text)"></span>
+            <span style="width:58%;background:var(--color-outline-variant)"></span>
+          </div>
+          <div class="mk-legend">
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-caution-text)"></span>You can settle</span><span class="mk-num">$1.0M</span></div>
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-outline-variant)"></span>Only the notice can</span><span class="mk-num">$1.4M</span></div>
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-error)"></span>Blocked outright</span><span class="mk-num">3 programs</span></div>
+          </div>
+          <p class="mk-meter__note">The grey share is the honest part — no answer you give can free it.</p>
         </div>
       </div>
     </div>
 
     <div class="mk-c6">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
-        <h3 class="mk-h3">Screening</h3>
-        <span class="mk-label">4,595 screened · 9 rules</span>
-      </div>
 
       <div class="or-card">
         <div class="mk-between" style="margin-bottom:8px"><div class="mk-row"><span class="or-badge or-badge--caution">Unresolved</span><span class="mk-label">sbir:ownership</span></div><span class="mk-num" style="color:var(--color-primary)">$680K</span></div>
@@ -368,8 +429,7 @@
     </div>
 
     <div class="mk-c3">
-      <div class="or-card" style="overflow:hidden;position:relative">
-        <div style="position:absolute;top:0;right:0;padding:16px;opacity:.1;pointer-events:none" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:64px">lock_open</span></div>
+      <div class="or-card">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -385,10 +445,14 @@
 
 <!-- =========================== 4 · UTAH VIEW ============================= -->
 <main class="mk-page" id="screen-utah" role="tabpanel" aria-label="Utah View" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Utah Winners</h2>
+    <span class="mk-label">USAspending + NIH RePORTER · cached 7d</span>
+  </div>
+
   <div class="mk-grid">
     <div class="mk-c3">
       <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
-        <div class="or-progress or-progress--top" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Evidence loaded"><div class="or-progress__fill" style="width:100%"></div></div>
         <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">UT</span>
         <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">Utah</h3>
         <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Your programs</span>
@@ -397,6 +461,11 @@
           <div class="or-kv"><span class="or-kv__label">Median award</span><span class="or-kv__value">$261,000</span></div>
           <div class="or-kv"><span class="or-kv__label">Total awarded</span><span class="or-kv__value">$18.4M</span></div>
           <div class="or-kv"><span class="or-kv__label">Utah-only programs</span><span class="or-kv__value">24</span></div>
+        </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">EVIDENCE LOADED</span><span class="mk-meter__value">100%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="EVIDENCE LOADED"><div class="mk-meter__fill" style="width:100%"></div></div>
+          <p class="mk-meter__note">37 of 37 Utah award records fetched and cached.</p>
         </div>
       </div>
 
@@ -411,10 +480,6 @@
     </div>
 
     <div class="mk-c6">
-      <div style="display:flex;justify-content:space-between;align-items:flex-end">
-        <h3 class="mk-h3">Utah Winners</h3>
-        <span class="mk-label">USAspending + NIH RePORTER · cached 7d</span>
-      </div>
       <p class="mk-anno" style="margin:0">evidence.nearbyWinners — computed today, rendered nowhere</p>
 
       <div class="or-card">
