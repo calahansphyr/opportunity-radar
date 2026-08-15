@@ -424,6 +424,18 @@
   --color-outline: #5c6570;
 }
 
+/* Deviation 6: .or-btn--text underlines the entire button on hover, and
+   .or-btn sets gap:8px — so on a text button that carries an icon the rule is
+   drawn through the gap, producing a detached dash beside the glyph. Icon-
+   bearing text buttons get a background tint instead, which is the hover
+   language the rest of the kit already uses. Text-only ones keep the
+   underline. */
+.or-btn--text:has(.material-symbols-outlined):hover:not(:disabled) {
+  text-decoration: none;
+  background: var(--color-surface-container-low);
+  border-radius: var(--radius-default);
+}
+
 /* Deviation 5: the kit assumes a border-box reset it never ships — it sets
    box-sizing on five individual rules and relies on the host for the rest.
    In this app Tailwind's preflight provides it, so this is a no-op here; for

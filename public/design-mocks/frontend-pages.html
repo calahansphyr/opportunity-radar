@@ -141,6 +141,52 @@
   .or-opp[data-expanded="false"] .or-opp__head { border-bottom: 0; }
   .mk-opp__toggle:hover .or-opp__title { color: var(--color-primary); }
 
+  /* ONE completion control. Square checkbox everywhere; "current" is
+     expressed by the row (spine + tint), never by a different control shape.
+     The kit ships a round or-task__radio for current and a cyan check icon
+     for done — three shapes for one idea. Should collapse in the kit too. */
+  .mk-check {
+    width: 20px; height: 20px; flex: none; margin-top: 2px;
+    border: 2px solid var(--color-outline-variant);
+    border-radius: var(--radius-default);
+    background: none; cursor: pointer; padding: 0;
+    display: grid; place-items: center; color: transparent;
+  }
+  .mk-check:hover { border-color: var(--color-primary); }
+  .or-task--current .mk-check { border-color: var(--color-primary); }
+  .mk-check[aria-checked="true"] {
+    background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary);
+  }
+  /* Due dates form a column on the right rather than floating to the text. */
+  .or-task__due { min-width: 62px; text-align: right; }
+  .or-task { align-items: flex-start; }
+
+  /* Completed work collapses into a counted group — it should not accumulate
+     forever in the active list. */
+  .mk-donehead {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 12px 16px; background: none; border: 0; cursor: pointer;
+    font: 500 12px/14px var(--font-label); letter-spacing: .05em;
+    text-transform: uppercase; color: var(--color-outline);
+    border-top: 1px solid var(--color-border-ice);
+  }
+  .mk-donehead:hover { color: var(--color-text-deep); }
+  .mk-donehead .mk-opp__chev { margin-left: auto; }
+
+  /* List toolbar — belongs to the rail it controls, not the page header. */
+  .mk-railbar {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+  }
+  .mk-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* Mockup commentary lives BETWEEN cards, never crammed inside one. */
+  .mk-note-out {
+    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+    margin: -12px 0 0; padding: 0 4px;
+    font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant);
+  }
+
   .mk-h3 { margin: 0; font: 600 24px/32px var(--font-headline); color: var(--color-text-deep); }
   .mk-h4 { margin: 0 0 24px; font: 600 20px/28px var(--font-headline); color: var(--color-text-deep); }
   .mk-label { font: 500 12px/14px var(--font-label); letter-spacing: .05em; color: var(--color-outline); }
@@ -188,7 +234,7 @@
 <main class="mk-page" id="screen-map" role="tabpanel" aria-label="Opportunity Map">
     <div class="mk-pagehead">
     <h2 class="mk-h3">Top Matches</h2>
-    <div class="mk-row"><span class="mk-label">1,703 live · 412 relevant awards</span><button class="or-btn or-btn--text or-btn--sm" id="toggle-all">Collapse all</button></div>
+    <span class="mk-label">1,703 live · 412 relevant awards</span>
   </div>
 
   <div class="mk-grid">
@@ -216,26 +262,58 @@
       <div class="or-card or-card--flush">
         <div class="mk-cardhead">Action Plan<button class="or-btn or-btn--text or-btn--sm"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">add</span>Add task</button></div>
         <div class="or-task or-task--current">
-          <div style="display:flex;align-items:flex-start;gap:12px"><div class="or-task__radio"></div>
-            <div><p class="or-task__title">Draft the 3-page project pitch</p><p class="or-task__detail">NSF wants the pitch before it invites a full proposal.</p></div></div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Draft the 3-page project pitch&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+            <div><p class="or-task__title">Draft the 3-page project pitch</p><p class="or-task__detail">NSF wants this before it invites a full proposal.</p></div></div>
           <span class="or-task__due or-task__due--urgent">SEP 05</span>
         </div>
         <div class="or-task">
-          <div style="display:flex;align-items:flex-start;gap:12px"><div class="or-task__box"></div>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Check UEI and CAGE status&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
             <div><p class="or-task__title">Check UEI and CAGE status</p><p class="or-task__detail">Confirm the SAM.gov record is active, not just created.</p></div></div>
           <span class="or-task__due">SEP 12</span>
         </div>
         <div class="or-task">
-          <div style="display:flex;align-items:flex-start;gap:12px"><span class="material-symbols-outlined" style="font-size:24px;color:var(--color-secondary);flex:none" aria-hidden="true">check_circle</span>
-            <div><p class="or-task__title or-task__title--done">Confirm Utah incorporation</p></div></div>
-          <span class="or-task__due">AUG 14</span>
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Write commercialization plan&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+            <div><p class="or-task__title">Write commercialization plan</p><p class="or-task__detail">Path to market, for the Phase I narrative.</p></div></div>
+          <span class="or-task__due">SEP 20</span>
         </div>
-        <p style="margin:0;padding:16px;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Things <b>you</b> do — tick them off. Fixed dates you cannot tick live in Deadlines below. <span class="mk-anno">TaskRow vs Timeline</span></p>
+        <button class="mk-donehead" id="done-head" aria-expanded="false" aria-controls="done-list">Completed (2)<span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></button>
+        <div id="done-list" hidden>
+          <div class="or-task">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <button class="mk-check" role="checkbox" aria-checked="true" aria-label="Mark &quot;Confirm Utah incorporation&quot; incomplete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+              <div><p class="or-task__title or-task__title--done">Confirm Utah incorporation</p></div></div>
+            <span class="or-task__due">AUG 14</span>
+          </div>
+          <div class="or-task">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <button class="mk-check" role="checkbox" aria-checked="true" aria-label="Mark &quot;Create SAM.gov account&quot; incomplete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+              <div><p class="or-task__title or-task__title--done">Create SAM.gov account</p></div></div>
+            <span class="or-task__due">AUG 11</span>
+          </div>
+        </div>
       </div>
+      <p class="mk-note-out">Work <b>you</b> do — tick it off.<span class="mk-anno">TaskRow</span></p>
     </div>
 
     <!-- span 6 — Top Matches -->
     <div class="mk-c6">
+
+      <div class="mk-railbar">
+        <div class="mk-filters" role="group" aria-label="Filter matches">
+          <button class="or-btn or-btn--tonal or-btn--sm or-btn--pill" aria-pressed="true">All 11</button>
+          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Likely fit 4</button>
+          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Verify 5</button>
+          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Held 2</button>
+        </div>
+        <div class="mk-row" style="gap:8px">
+          <label class="mk-vh" for="sort">Sort matches</label>
+          <select id="sort" class="or-btn or-btn--outline or-btn--sm" style="padding:6px 10px"><option>Best fit</option><option>Deadline soonest</option><option>Largest award</option></select>
+          <button class="or-btn or-btn--text or-btn--sm" id="toggle-all">Collapse all</button>
+        </div>
+      </div>
 
       <article class="or-opp" data-expanded="true">
         <button class="mk-opp__toggle" aria-expanded="true" aria-controls="opp-nsf-body">
@@ -360,8 +438,9 @@
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
+        </div>
       </div>
+      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -451,8 +530,9 @@
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
+        </div>
       </div>
+      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -557,8 +637,9 @@
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
           <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
         </div>
-        <p style="margin:16px 0 0;font:400 13px/18px var(--font-body);color:var(--color-on-surface-variant)">Dates the world sets — you meet them or miss them. Program dates are each opportunity's <code>closeDate</code>; prerequisites are worked back from it deterministically. <span class="mk-anno">engine/timeline.ts — no LLM, no estimates</span></p></div>
+        </div>
       </div>
+      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -736,6 +817,22 @@
       c.querySelector(".mk-opp__toggle").setAttribute("aria-expanded", String(open));
     }
     toggleAll.textContent = open ? "Collapse all" : "Expand all";
+  });
+
+  const doneHead = document.getElementById("done-head"), doneList = document.getElementById("done-list");
+  doneHead.addEventListener("click", () => {
+    const open = doneList.hidden;
+    doneList.hidden = !open;
+    doneHead.setAttribute("aria-expanded", String(open));
+  });
+  // Checkbox is the single completion control on every task row.
+  document.addEventListener("click", (e) => {
+    const c = e.target.closest(".mk-check");
+    if (!c) return;
+    const on = c.getAttribute("aria-checked") !== "true";
+    c.setAttribute("aria-checked", String(on));
+    const title = c.closest(".or-task").querySelector(".or-task__title");
+    title.classList.toggle("or-task__title--done", on);
   });
 
   const drawer = document.getElementById("drawer"), fab = document.getElementById("fab");
