@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NSF SBIR Phase I — Digital Health · Federal Catalyst</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          "surface-container-low": "#eef4ff",
+          "surface-dim": "#ccdbf2",
+          "text-muted": "#3D4A5C",
+          "on-primary": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "on-surface": "#0d1c2d",
+          "border-subtle": "#E2E8F0",
+          "secondary": "#006c4a",
+          "on-surface-variant": "#3D4A5C",
+          "surface-container": "#e5efff",
+          "surface-base": "#F8FAFC",
+          "status-warning-bg": "#FFF7ED",
+          "outline-variant": "#8A8D91",
+          "primary": "#000101",
+          "surface-sunken": "#F1F5F9",
+          "surface-container-high": "#dbe9ff",
+          "surface-variant": "#d4e4fa"
+        },
+        spacing: { "container-max": "1440px", margin: "24px" },
+        fontFamily: {
+          "data-mono": ["JetBrains Mono", "ui-monospace", "monospace"],
+          sans: ["Geist", "ui-sans-serif", "system-ui"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :focus-visible { outline: 2px solid #000101; outline-offset: 2px; }
+  .skip-link { position: absolute; left: 16px; top: -48px; z-index: 80; background: #000101; color: #fff; padding: 8px 12px; border-radius: 4px; }
+  .skip-link:focus { top: 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body class="bg-surface-base text-on-surface font-sans text-[14px] leading-5 antialiased min-h-screen">
+
+<a class="skip-link" href="#brief">Skip to opportunity brief</a>
+
+<div class="bg-white border-b border-border-subtle px-margin py-2 flex flex-wrap items-center gap-2">
+  <span class="text-[11px] font-semibold tracking-wide uppercase text-text-muted mr-1">Design system · polished cards</span>
+  <a class="px-3 py-1 rounded-full border border-outline-variant text-[11px] font-semibold tracking-wide uppercase" href="map.html">Opportunity Map</a>
+  <a class="px-3 py-1 rounded-full bg-primary text-on-primary text-[11px] font-semibold tracking-wide uppercase" href="opportunity.html" aria-current="page">Opportunity</a>
+  <a class="px-3 py-1 rounded-full border border-outline-variant text-[11px] font-semibold tracking-wide uppercase" href="hybrid-iterations.html">A / B / C</a>
+</div>
+
+<header class="border-b border-border-subtle bg-surface-container-lowest flex justify-between items-center h-16 px-margin">
+  <div class="flex items-center gap-4">
+    <p class="text-[18px] font-semibold tracking-tight m-0">Federal Catalyst</p>
+    <nav class="hidden md:flex ml-6 gap-8" aria-label="Primary">
+      <a class="text-text-muted text-[11px] font-semibold tracking-wide uppercase pt-4 hover:text-primary" href="map.html">Opportunity Map</a>
+      <span class="text-text-muted text-[11px] font-semibold tracking-wide uppercase pt-4">Screening</span>
+      <span class="text-text-muted text-[11px] font-semibold tracking-wide uppercase pt-4">Utah view</span>
+    </nav>
+  </div>
+  <p class="hidden sm:block font-data-mono text-[13px] text-text-muted m-0">1,703 live · 207,000 awards</p>
+</header>
+
+<div class="max-w-container-max mx-auto px-margin pt-4">
+  <nav class="text-[13px] text-text-muted" aria-label="Breadcrumb">
+    <ol class="flex flex-wrap items-center gap-2 list-none p-0 m-0">
+      <li><a class="underline underline-offset-2 hover:text-primary" href="map.html">Opportunity Map</a></li>
+      <li aria-hidden="true">/</li>
+      <li class="text-on-surface font-medium">NSF SBIR Phase I — Digital Health</li>
+    </ol>
+  </nav>
+</div>
+
+<main class="max-w-container-max mx-auto p-margin pt-4">
+
+  <!-- Persistent control surface, compact -->
+  <section class="bg-surface-container-lowest border border-border-subtle rounded-[24px] mb-6 shadow-sm" aria-labelledby="profile-heading">
+    <div class="flex flex-col lg:flex-row lg:items-center gap-4 px-6 py-4">
+      <div class="flex-1 min-w-0">
+        <h2 id="profile-heading" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-1">Founder Profile</h2>
+        <p class="text-[13px] m-0">Health IT · NAICS 541511 · 15 employees · Salt Lake · stage inferred from $1M ARR</p>
+      </div>
+      <p class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0">Match confidence: Medium — 2 unknowns limiting results</p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 px-6 py-4 border-t border-border-subtle" role="group" aria-label="Editable profile fields">
+      <button type="button" class="text-left rounded-xl border border-border-subtle bg-white px-3 py-2.5 min-h-11 hover:bg-surface-sunken">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-secondary">Confirmed</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-text-muted mt-1">Industry</span>
+        <span class="font-medium">Health IT</span>
+      </button>
+      <button type="button" class="text-left rounded-xl border border-border-subtle bg-white px-3 py-2.5 min-h-11 hover:bg-surface-sunken">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-secondary">Confirmed</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-text-muted mt-1">NAICS</span>
+        <span class="font-data-mono text-sm">541511</span>
+      </button>
+      <button type="button" class="text-left rounded-xl border border-border-subtle bg-white px-3 py-2.5 min-h-11 hover:bg-surface-sunken">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-secondary">Confirmed</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-text-muted mt-1">Employees</span>
+        <span class="font-medium">15</span>
+      </button>
+      <button type="button" class="text-left rounded-xl border border-dashed border-outline-variant bg-surface-container-low px-3 py-2.5 min-h-11">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-on-surface">Inferred</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-text-muted mt-1">Stage</span>
+        <span class="text-[13px]">inferred from $1M ARR</span>
+      </button>
+      <button type="button" class="text-left rounded-xl border border-[#D97706] bg-status-warning-bg px-3 py-2.5 min-h-11">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-[#7F1D1D]">Hard gap</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-[#7C2D12] mt-1">Ownership</span>
+        <span class="text-[13px] font-medium text-[#7C2D12]">Unknown · blocks 4</span>
+      </button>
+      <button type="button" class="text-left rounded-xl border border-dashed border-border-subtle bg-white px-3 py-2.5 min-h-11">
+        <span class="text-[11px] font-semibold tracking-wide uppercase text-text-muted">Soft gap</span>
+        <span class="block text-[11px] font-semibold tracking-wide uppercase text-text-muted mt-1">UEI / SAM.gov</span>
+        <span class="text-[13px]">Not on file</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="grid lg:grid-cols-12 gap-6 items-start">
+    <article id="brief" class="lg:col-span-8 border border-border-subtle rounded-[24px] bg-surface-container-lowest overflow-hidden shadow-sm" aria-labelledby="opp-title">
+      <header class="p-6 pb-4 border-b border-border-subtle">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
+          <span class="bg-[#DCFCE7] text-[#14532D] text-[11px] font-semibold tracking-wide uppercase px-2.5 py-1 rounded-md">Likely fit</span>
+          <p class="m-0 text-[13px] text-text-muted">Closes in 47 days · ID NSF-23-456</p>
+        </div>
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div>
+            <h1 id="opp-title" class="text-[24px] leading-8 font-semibold tracking-tight m-0">NSF SBIR Phase I — Digital Health</h1>
+            <p class="text-[13px] text-text-muted mt-2 mb-0">National Science Foundation · America’s Seed Fund · SBIR/STTR</p>
+          </div>
+          <p class="m-0 text-right shrink-0">
+            <span class="block text-[24px] font-semibold leading-8">$305K</span>
+            <span class="text-[11px] font-semibold tracking-wide uppercase text-text-muted">ceiling</span>
+          </p>
+        </div>
+      </header>
+
+      <div class="divide-y divide-border-subtle text-[14px] leading-5">
+        <section class="px-6 py-5" aria-labelledby="why">
+          <h2 id="why" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">Why it fits</h2>
+          <ul class="m-0 pl-5 space-y-1.5">
+            <li>U.S.-based small business with an active R&amp;D component</li>
+            <li>AI technology applied to healthcare operations</li>
+            <li>Commercialization path (hospital pilots) that NSF Phase I can fund as technical feasibility</li>
+            <li>Capital need of $500K–$2M is consistent with Phase I now and Phase II later</li>
+          </ul>
+          <p class="mt-3 mb-0 text-[13px] text-text-muted">This is an assessment of alignment, not a determination of eligibility.</p>
+        </section>
+
+        <section class="px-6 py-5" aria-labelledby="disqualify">
+          <h2 id="disqualify" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">What could disqualify</h2>
+          <ul class="m-0 pl-5 space-y-1.5">
+            <li>$1M ARR may read as productization rather than unresolved technical risk. Reviewers expect a research question, not a sales plan.</li>
+            <li>Majority U.S. ownership is required. Ownership is currently a hard gap on your profile.</li>
+            <li>Work that is already commercially deployed for nurses may fall outside Phase I scope.</li>
+          </ul>
+        </section>
+
+        <section class="px-6 py-5" aria-labelledby="who">
+          <h2 id="who" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">Who else got this money</h2>
+          <p class="m-0 mb-4">4 Utah winners. Median $261K across 412 similar awards.</p>
+          <div class="overflow-x-auto rounded-xl border border-border-subtle">
+            <table class="w-full text-left text-[13px]">
+              <caption class="sr-only">Historical awards similar to this opportunity</caption>
+              <thead class="bg-surface-sunken text-[11px] font-semibold tracking-wide uppercase text-text-muted">
+                <tr>
+                  <th scope="col" class="px-4 py-2.5 font-semibold">Recipient pattern</th>
+                  <th scope="col" class="px-4 py-2.5 font-semibold">Place</th>
+                  <th scope="col" class="px-4 py-2.5 font-semibold">Amount</th>
+                  <th scope="col" class="px-4 py-2.5 font-semibold">Year</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border-subtle">
+                <tr>
+                  <th scope="row" class="px-4 py-3 font-medium">12-person Provo medtech (your funding twin)</th>
+                  <td class="px-4 py-3">Provo</td>
+                  <td class="px-4 py-3 font-data-mono">$256K Phase I</td>
+                  <td class="px-4 py-3">2021</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="px-4 py-3 font-medium">Same twin, Phase II follow-on</th>
+                  <td class="px-4 py-3">Provo</td>
+                  <td class="px-4 py-3 font-data-mono">$1.1M Phase II</td>
+                  <td class="px-4 py-3">2023</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="px-4 py-3 font-medium">Same twin, later procurement</th>
+                  <td class="px-4 py-3">Provo</td>
+                  <td class="px-4 py-3 font-data-mono">$3M Army contract</td>
+                  <td class="px-4 py-3">2025</td>
+                </tr>
+                <tr>
+                  <th scope="row" class="px-4 py-3 font-medium">Utah Digital Health SBIR cluster (3 other winners)</th>
+                  <td class="px-4 py-3">Utah</td>
+                  <td class="px-4 py-3 font-data-mono">median $261K</td>
+                  <td class="px-4 py-3">2019–2024</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="px-6 py-5 bg-surface-sunken" aria-labelledby="twin">
+          <h2 id="twin" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">Your funding twin</h2>
+          <p class="m-0 font-medium">12-person Provo medtech · Phase I $256K (2021) → Phase II $1.1M (2023) → $3M Army contract (2025)</p>
+          <p class="mt-2 mb-0 text-[13px]">Closest public path we found: similar headcount, Utah, clinical software, then a government customer. Not a prediction that you will win.</p>
+        </section>
+
+        <section class="px-6 py-5" aria-labelledby="verify">
+          <h2 id="verify" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">What you should verify</h2>
+          <ul class="m-0 pl-5 space-y-1.5">
+            <li>Topic still open for Digital Health on the current NSF SBIR solicitation</li>
+            <li>Whether your nurse-admin work is framed as a technical uncertainty NSF will fund</li>
+            <li>Small-business size standard for NAICS 541511</li>
+            <li>U.S. ownership and registration timing versus the 47-day close</li>
+          </ul>
+        </section>
+
+        <section class="px-6 py-5" aria-labelledby="next">
+          <h2 id="next" class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-2">What to do next</h2>
+          <p class="m-0">You need a SAM.gov UEI — takes 2–4 weeks. Start that now; this closes in 47 days. Then read the Digital Health topic and write the research question before any narrative about hospital sales.</p>
+        </section>
+      </div>
+    </article>
+
+    <aside class="lg:col-span-4 space-y-4 lg:sticky lg:top-4" aria-label="Actions for this opportunity">
+      <section class="border border-border-subtle rounded-[24px] bg-surface-container-lowest p-5">
+        <h2 class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0">Dated action plan</h2>
+        <ol class="mt-3 space-y-3 text-[13px] p-0 list-none">
+          <li class="flex gap-3"><span class="font-data-mono text-text-muted w-8 shrink-0">D0</span><span>Start SAM.gov UEI — takes 2–4 weeks. This is on the critical path.</span></li>
+          <li class="flex gap-3"><span class="font-data-mono text-text-muted w-8 shrink-0">D7</span><span>Read NSF Digital Health topic. Flag research vs. current ARR.</span></li>
+          <li class="flex gap-3"><span class="font-data-mono text-text-muted w-8 shrink-0">D14</span><span>Review the 4 Utah winners’ public abstracts, starting with the Provo twin.</span></li>
+          <li class="flex gap-3"><span class="font-data-mono text-text-muted w-8 shrink-0">D21</span><span>Confirm ownership so set-asides on the map can be scored. NSF Phase I does not wait on that answer.</span></li>
+        </ol>
+      </section>
+
+      <form class="border border-[#D97706] rounded-[24px] bg-status-warning-bg p-5">
+        <p class="text-[11px] font-semibold tracking-wide uppercase text-[#7F1D1D] m-0">Soft gap on this opportunity</p>
+        <h2 class="text-[18px] font-semibold mt-2 mb-2">UEI not on file</h2>
+        <p class="text-[13px] m-0">Does not hide this listing. It can still make you miss the close. Ownership remains a hard gap for four other listings on the map, not for ranking this NSF topic.</p>
+      </form>
+
+      <section class="border border-border-subtle rounded-[24px] bg-surface-container-lowest p-5">
+        <h2 class="text-[11px] font-semibold tracking-wide uppercase text-text-muted m-0 mb-3">In this ranked set</h2>
+        <ol class="space-y-3 p-0 m-0 list-none text-[13px]">
+          <li class="font-medium">NSF SBIR Phase I — Digital Health <span class="text-text-muted font-normal">(this page)</span></li>
+          <li><a class="underline underline-offset-2" href="map.html">NIH R43 — Clinical Tech Innovations</a> · Verify eligibility</li>
+          <li><a class="underline underline-offset-2" href="map.html">DoD BAA — Human Performance</a> · Adjacent</li>
+        </ol>
+      </section>
+
+      <p class="text-[13px] text-text-muted m-0">This is not a determination of eligibility. Confirm program rules on the agency solicitation.</p>
+    </aside>
+  </div>
+</main>
+</body>
+</html>

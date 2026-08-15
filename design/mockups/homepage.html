@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Opportunity Map — Federal Catalyst</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          "surface-container-low": "#eef4ff",
+          "surface-dim": "#ccdbf2",
+          "text-muted": "#3D4A5C",
+          "on-primary": "#ffffff",
+          "surface-container-lowest": "#ffffff",
+          "on-surface": "#0d1c2d",
+          "border-subtle": "#E2E8F0",
+          "secondary": "#006c4a",
+          "on-surface-variant": "#3D4A5C",
+          "surface-container": "#e5efff",
+          "surface-base": "#F8FAFC",
+          "status-warning-bg": "#FFF7ED",
+          "outline-variant": "#8A8D91",
+          "primary": "#000101",
+          "surface-sunken": "#F1F5F9",
+          "surface-container-high": "#dbe9ff",
+          "surface-variant": "#d4e4fa"
+        },
+        spacing: { "container-max": "1440px", margin: "24px" },
+        fontFamily: {
+          "data-mono": ["JetBrains Mono", "ui-monospace", "monospace"],
+          sans: ["Geist", "ui-sans-serif", "system-ui"]
+        },
+        fontSize: {
+          "data-mono": ["13px", { lineHeight: "18px", fontWeight: "400" }],
+          "label-caps": ["11px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "600" }],
+          "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+          "headline-md": ["18px", { lineHeight: "24px", letterSpacing: "-0.01em", fontWeight: "600" }],
+          "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :focus-visible {
+    outline: 2px solid #000101;
+    outline-offset: 2px;
+  }
+  .skip-link {
+    position: absolute;
+    left: 16px;
+    top: -40px;
+    z-index: 70;
+    background: #000101;
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .skip-link:focus { top: 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body class="bg-surface-base text-on-surface font-sans text-body-md antialiased min-h-screen">
+
+<a class="skip-link" href="#opportunity-map">Skip to opportunity map</a>
+
+<div class="bg-white border-b border-border-subtle px-margin py-2 flex items-center gap-2 text-body-sm" role="navigation" aria-label="Design versions">
+  <span class="text-label-caps text-text-muted mr-1">Iterate</span>
+  <a class="px-3 py-1 rounded-full bg-primary text-on-primary text-label-caps" href="homepage.html" aria-current="page">Current</a>
+  <a class="px-3 py-1 rounded-full border border-outline-variant text-label-caps" href="homepage-hybrid.html">Previous hybrid</a>
+  <a class="px-3 py-1 rounded-full border border-outline-variant text-label-caps" href="index.html">Stitch</a>
+  <a class="px-3 py-1 rounded-full border border-outline-variant text-label-caps" href="layout-v1.html">V1 layout</a>
+</div>
+
+<header class="border-b border-border-subtle bg-surface-container-lowest">
+  <div class="flex justify-between items-center h-14 px-margin">
+    <div class="flex items-center gap-8 min-w-0">
+      <p class="text-headline-md font-semibold text-primary m-0">Federal Catalyst</p>
+      <nav class="hidden md:flex gap-6" aria-label="Primary">
+        <a class="text-primary border-b-2 border-primary pb-[14px] pt-[14px] text-label-caps" href="homepage.html" aria-current="page">Opportunity Map</a>
+        <a class="text-text-muted text-label-caps pt-[14px] hover:text-primary" href="#screening">Screening</a>
+        <a class="text-text-muted text-label-caps pt-[14px] hover:text-primary" href="#utah">Utah view</a>
+      </nav>
+    </div>
+    <div class="flex items-center gap-4">
+      <p class="hidden sm:block font-data-mono text-data-mono text-text-muted m-0">1,703 live · 207,000 awards</p>
+      <button type="button" class="text-on-surface p-2 min-h-11 min-w-11" aria-label="Notifications">
+        <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+      </button>
+      <button type="button" class="text-on-surface p-2 min-h-11 min-w-11" aria-label="Help">
+        <span class="material-symbols-outlined" aria-hidden="true">help_outline</span>
+      </button>
+      <img alt="" class="w-9 h-9 rounded-full border-2 border-surface-container-high object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC-6aVB_He7GybEEwKWQ3s2-hruTRJCdO_1CYvJp9CfhTIxR-kgfo49ALomPcjx8VvKPihHrE3Q-YQF3WlOTd1dVqKCwU6YbBGawr0icT3W_GgTZYeWn7eZudsCOL1C7HYhE1vzazHk4UH2xXTvDEETotS6iIzyz-H4bodvOgbr6nvWUfKhs5DHbqmY-Lp89RMg8FHl8FRqVeMp4F7GZW9e9ORS516V3HOj0LbQlhXgV4FU0rma0w">
+    </div>
+  </div>
+</header>
+
+<!-- V1: full-bleed control rail -->
+<section class="bg-surface-container-lowest border-b border-border-subtle" aria-labelledby="profile-heading">
+  <div class="px-margin py-4">
+    <div class="flex flex-col lg:flex-row lg:items-start gap-5">
+      <div class="flex-1 min-w-0">
+        <h1 id="profile-heading" class="text-label-caps text-text-muted mb-1">Company as stated</h1>
+        <p class="text-body-sm text-on-surface m-0">We build AI software that cuts admin work for nurses. Utah, Salt Lake, about $1M ARR, raised $2.5M. Looking for $500K–$2M for product and hospital pilots.</p>
+      </div>
+      <div class="lg:w-[340px] shrink-0">
+        <p id="confidence-label" class="text-label-caps text-text-muted m-0 mb-1.5">Match confidence: Medium — 2 unknowns limiting results</p>
+        <div
+          role="meter"
+          aria-labelledby="confidence-label"
+          aria-valuemin="0"
+          aria-valuemax="8"
+          aria-valuenow="6"
+          aria-valuetext="6 of 8 profile fields known. Match confidence medium. Two unknowns limiting results."
+          class="h-2 bg-border-subtle rounded-full overflow-hidden flex"
+        >
+          <div class="h-full bg-secondary w-3/4"></div>
+        </div>
+        <p class="font-data-mono text-[12px] text-text-muted mt-1.5 m-0">6 / 8 fields</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 border-t border-border-subtle" role="group" aria-label="Editable company profile. Four provenance states: confirmed, inferred, soft gap, hard gap.">
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-r border-b border-border-subtle bg-white hover:bg-surface-sunken">
+      <span class="text-label-caps text-secondary">Confirmed</span>
+      <span class="text-label-caps text-text-muted block mt-1">Industry</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-secondary text-[16px]" aria-hidden="true">check_circle</span>
+        <span class="text-body-sm font-medium">Health IT</span>
+      </span>
+    </button>
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-r border-b border-border-subtle bg-white hover:bg-surface-sunken">
+      <span class="text-label-caps text-secondary">Confirmed</span>
+      <span class="text-label-caps text-text-muted block mt-1">NAICS</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-secondary text-[16px]" aria-hidden="true">check_circle</span>
+        <span class="font-data-mono text-sm">541511</span>
+      </span>
+    </button>
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-r border-b border-border-subtle bg-white hover:bg-surface-sunken">
+      <span class="text-label-caps text-secondary">Confirmed</span>
+      <span class="text-label-caps text-text-muted block mt-1">Employees</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-secondary text-[16px]" aria-hidden="true">check_circle</span>
+        <span class="text-body-sm font-medium">15</span>
+      </span>
+    </button>
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-r border-b border-border-subtle bg-surface-container-low hover:bg-surface-container">
+      <span class="text-label-caps text-on-surface">Inferred</span>
+      <span class="text-label-caps text-text-muted block mt-1">Stage</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-text-muted text-[16px]" aria-hidden="true">info</span>
+        <span class="text-body-sm">inferred from $1M ARR</span>
+      </span>
+    </button>
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-r border-b border-border-subtle bg-status-warning-bg" aria-describedby="ownership-help">
+      <span class="text-label-caps text-[#7F1D1D]">Hard gap</span>
+      <span class="text-label-caps text-[#7C2D12] block mt-1">Ownership</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-[#9A3412] text-[16px]" aria-hidden="true">warning</span>
+        <span class="text-body-sm font-medium text-[#7C2D12]">Unknown · blocks 4</span>
+      </span>
+    </button>
+    <button type="button" class="text-left px-4 py-3 min-h-11 border-b border-border-subtle bg-white hover:bg-surface-sunken">
+      <span class="text-label-caps text-text-muted">Soft gap</span>
+      <span class="text-label-caps text-text-muted block mt-1">UEI / SAM.gov</span>
+      <span class="flex items-center gap-1.5 mt-0.5">
+        <span class="material-symbols-outlined text-text-muted text-[16px]" aria-hidden="true">radio_button_unchecked</span>
+        <span class="text-body-sm">Not on file</span>
+      </span>
+    </button>
+  </div>
+  <p id="ownership-help" class="sr-only">Hard gap: unknown ownership is holding four set-aside opportunities off the ranked set. They remain listed and greyed below.</p>
+</section>
+
+<main id="opportunity-map" class="max-w-container-max mx-auto px-margin py-6">
+  <div class="grid lg:grid-cols-12 gap-6 items-start">
+
+    <div class="lg:col-span-8">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+        <h2 class="text-headline-md m-0">Opportunity Map</h2>
+        <p class="m-0 bg-surface-sunken font-data-mono text-data-mono px-4 py-2 rounded-full border border-border-subtle" aria-live="polite">
+          Screening 1,703 open federal opportunities… 412 relevant awards found.
+        </p>
+      </div>
+      <p class="text-body-sm text-text-muted mb-3 mt-0">7 shown · 4 held pending ownership. Ranked by fit, not by a percentage score.</p>
+
+      <ol class="space-y-3 list-none p-0 m-0">
+        <li>
+          <article class="border-2 border-primary rounded-[24px] bg-surface-container-lowest overflow-hidden" aria-labelledby="opp-nsf">
+            <div class="px-5 py-4 flex items-start justify-between gap-4 border-b border-border-subtle">
+              <div>
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <span class="bg-[#DCFCE7] text-[#14532D] text-label-caps px-2.5 py-1 rounded-md">Likely fit</span>
+                  <span class="text-body-sm text-text-muted flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]" aria-hidden="true">schedule</span>
+                    closes in 47 days
+                  </span>
+                </div>
+                <h3 id="opp-nsf" class="text-headline-md m-0 leading-tight">NSF SBIR Phase I — Digital Health</h3>
+                <p class="text-body-sm text-text-muted mt-1 mb-0">NSF · America’s Seed Fund · 4 Utah winners</p>
+              </div>
+              <p class="text-right shrink-0 m-0">
+                <span class="block text-headline-md">$305K</span>
+                <span class="text-label-caps text-text-muted">ceiling</span>
+              </p>
+            </div>
+            <div class="divide-y divide-border-subtle text-body-sm text-on-surface">
+              <section class="px-5 py-3" aria-labelledby="nsf-why">
+                <h4 id="nsf-why" class="text-label-caps text-text-muted m-0 mb-1">Why it fits</h4>
+                <p class="m-0">U.S. small business, AI technology with an active R&amp;D component, healthcare application, and a funding need inside the Phase I range.</p>
+              </section>
+              <section class="px-5 py-3" aria-labelledby="nsf-disq">
+                <h4 id="nsf-disq" class="text-label-caps text-text-muted m-0 mb-1">What could disqualify</h4>
+                <p class="m-0">$1M ARR may read as productization rather than research. Majority U.S. ownership is required and is currently unknown.</p>
+              </section>
+              <section class="px-5 py-3" aria-labelledby="nsf-who">
+                <h4 id="nsf-who" class="text-label-caps text-text-muted m-0 mb-1">Who else got this money</h4>
+                <p class="m-0">4 Utah winners. Median $261K across 412 similar awards.</p>
+              </section>
+              <section class="px-5 py-3 bg-surface-sunken" aria-labelledby="nsf-twin">
+                <h4 id="nsf-twin" class="text-label-caps text-text-muted m-0 mb-1">Your funding twin</h4>
+                <p class="m-0 font-medium">12-person Provo medtech · Phase I $256K (2021) → Phase II $1.1M (2023) → $3M Army contract (2025)</p>
+              </section>
+              <section class="px-5 py-3" aria-labelledby="nsf-next">
+                <h4 id="nsf-next" class="text-label-caps text-text-muted m-0 mb-1">What to do next</h4>
+                <p class="m-0">You need a SAM.gov UEI — takes 2–4 weeks. Start that now; this closes in 47 days.</p>
+              </section>
+            </div>
+            <div class="px-5 py-4 bg-surface-sunken border-t border-border-subtle flex justify-between items-center gap-3">
+              <p class="font-data-mono text-data-mono text-text-muted m-0">ID: NSF-23-456</p>
+              <button type="button" class="bg-primary text-on-primary text-label-caps px-5 py-2.5 rounded-full min-h-11">View details for NSF SBIR Phase I</button>
+            </div>
+          </article>
+        </li>
+
+        <li>
+          <article class="border border-border-subtle rounded-[24px] bg-surface-container-lowest px-5 py-4 flex items-start justify-between gap-4" aria-labelledby="opp-nih">
+            <div>
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="bg-[#FEF3C7] text-[#7C2D12] text-label-caps px-2.5 py-1 rounded-md">Verify eligibility</span>
+                <span class="text-body-sm text-text-muted">NIH / HHS · 120 days</span>
+              </div>
+              <h3 id="opp-nih" class="text-headline-md m-0">NIH R43 — Clinical Tech Innovations</h3>
+              <p class="text-body-sm text-on-surface mt-1 mb-0">Hospital workflow software can fit if you can name a clinical research question, not only a sales motion.</p>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-headline-md m-0">$275K</p>
+              <button type="button" class="mt-3 border border-outline-variant text-label-caps px-4 py-2 rounded-full bg-white min-h-11">NIH R43 requirements</button>
+            </div>
+          </article>
+        </li>
+
+        <li>
+          <article class="border border-border-subtle rounded-[24px] bg-surface-container-lowest px-5 py-4 flex items-start justify-between gap-4" aria-labelledby="opp-dod">
+            <div>
+              <div class="flex flex-wrap items-center gap-2 mb-2">
+                <span class="bg-surface-dim text-on-surface text-label-caps px-2.5 py-1 rounded-md">Adjacent</span>
+                <span class="text-body-sm text-text-muted">DoD · 14 days</span>
+              </div>
+              <h3 id="opp-dod" class="text-headline-md m-0">DoD BAA — Human Performance Optimization</h3>
+              <p class="text-body-sm text-on-surface mt-1 mb-0">Nurse admin burden is not the stated problem. Only pursue if you can reframe for operator cognitive load.</p>
+            </div>
+            <p class="text-body-sm text-text-muted m-0 shrink-0">Varies</p>
+          </article>
+        </li>
+
+        <li>
+          <article class="border border-dashed border-outline-variant rounded-[24px] bg-surface-sunken px-5 py-4" aria-labelledby="opp-8a" aria-describedby="held-note-8a">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="bg-white border border-outline-variant text-on-surface text-label-caps px-2.5 py-1 rounded-md">Held · ownership</span>
+              <span class="material-symbols-outlined text-on-surface text-[18px]" aria-hidden="true">lock</span>
+            </div>
+            <h3 id="opp-8a" class="text-headline-md m-0">SBA 8(a) Business Development — IT services</h3>
+            <p id="held-note-8a" class="text-body-sm text-on-surface mt-1 mb-0">Listed, not ranked. One of 4 opportunities held until ownership is confirmed.</p>
+          </article>
+        </li>
+
+        <li>
+          <article class="border border-dashed border-outline-variant rounded-[24px] bg-surface-sunken px-5 py-4" aria-labelledby="opp-wosb" aria-describedby="held-note-wosb">
+            <div class="flex flex-wrap items-center gap-2 mb-2">
+              <span class="bg-white border border-outline-variant text-on-surface text-label-caps px-2.5 py-1 rounded-md">Held · ownership</span>
+              <span class="material-symbols-outlined text-on-surface text-[18px]" aria-hidden="true">lock</span>
+            </div>
+            <h3 id="opp-wosb" class="text-headline-md m-0">WOSB Federal Contract Program — Health IT</h3>
+            <p id="held-note-wosb" class="text-body-sm text-on-surface mt-1 mb-0">Woman-owned set-aside. Held because we will not guess ownership.</p>
+          </article>
+        </li>
+      </ol>
+    </div>
+
+    <aside class="lg:col-span-4 space-y-3 lg:sticky lg:top-4" aria-label="Refine profile and next actions">
+      <form class="border border-[#D97706] rounded-[24px] bg-status-warning-bg p-5" aria-labelledby="unlock-heading">
+        <p class="text-label-caps text-[#7F1D1D] m-0">Unlock</p>
+        <h2 id="unlock-heading" class="text-headline-md mt-2 mb-2 leading-tight">Ownership is unknown. Four set-asides stay held.</h2>
+        <p class="text-body-sm text-on-surface m-0">Woman-owned, veteran-owned, HUBZone, and 8(a) listings stay on the map. Answering does not create a grant — it decides whether those four should be scored.</p>
+        <fieldset class="mt-4 p-0 border-0">
+          <legend class="text-label-caps text-text-muted mb-2">Confirm ownership</legend>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center justify-center gap-2 bg-primary text-on-primary text-label-caps py-2.5 rounded-full min-h-11 cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2">
+              <input class="sr-only" type="radio" name="ownership" value="wosb">
+              Woman-owned
+            </label>
+            <label class="flex items-center justify-center bg-white border border-outline-variant text-label-caps py-2.5 rounded-full min-h-11 cursor-pointer">
+              <input class="sr-only" type="radio" name="ownership" value="vosb">
+              Veteran-owned
+            </label>
+            <label class="flex items-center justify-center bg-white border border-outline-variant text-label-caps py-2.5 rounded-full min-h-11 cursor-pointer">
+              <input class="sr-only" type="radio" name="ownership" value="neither">
+              Neither / other
+            </label>
+            <label class="flex items-center justify-center bg-white border border-outline-variant text-label-caps py-2.5 rounded-full min-h-11 cursor-pointer">
+              <input class="sr-only" type="radio" name="ownership" value="skip">
+              Skip for now
+            </label>
+          </div>
+        </fieldset>
+      </form>
+
+      <section class="border border-border-subtle rounded-[24px] bg-surface-container-lowest p-5" aria-labelledby="plan-heading">
+        <h2 id="plan-heading" class="text-label-caps text-text-muted m-0">Dated action plan</h2>
+        <ol class="mt-3 space-y-3 text-body-sm p-0 list-none">
+          <li class="flex gap-3">
+            <span class="font-data-mono text-data-mono text-text-muted w-8 shrink-0">D0</span>
+            <span>Start SAM.gov UEI. You need a SAM.gov UEI — takes 2–4 weeks.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="font-data-mono text-data-mono text-text-muted w-8 shrink-0">D7</span>
+            <span>Read NSF SBIR Phase I Digital Health; flag research vs. current ARR.</span>
+          </li>
+          <li class="flex gap-3">
+            <span class="font-data-mono text-data-mono text-text-muted w-8 shrink-0">D14</span>
+            <span>Review the 4 Utah winners’ public abstracts before contacting NIH.</span>
+          </li>
+        </ol>
+      </section>
+
+      <p class="text-body-sm text-text-muted m-0 px-1">This is not a determination of eligibility. Confirm program rules on the agency solicitation.</p>
+    </aside>
+  </div>
+</main>
+</body>
+</html>

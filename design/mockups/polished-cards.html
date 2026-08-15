@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Opportunity Map — Polished cards</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+  :root {
+    --surface-base: #f8fafc;
+    --surface-lowest: #ffffff;
+    --surface-sunken: #f1f5f9;
+    --surface-container-low: #eef4ff;
+    --surface-dim: #ccdbf2;
+    --on-surface: #0d1c2d;
+    --text-muted: #3d4a5c;
+    --border: #e2e8f0;
+    --outline: #8a8d91;
+    --primary: #000101;
+    --on-primary: #ffffff;
+    --secondary: #006c4a;
+    --warning-bg: #fff7ed;
+    --warning-border: #d97706;
+    --hard-label: #7f1d1d;
+    --hard-text: #7c2d12;
+    --fit-likely-bg: #dcfce7;
+    --fit-likely-fg: #14532d;
+    --fit-verify-bg: #fef3c7;
+    --fit-verify-fg: #7c2d12;
+    --radius-card: 24px;
+    --radius-chip: 12px;
+    --radius-pill: 999px;
+    --margin: 24px;
+    --max: 1440px;
+    --font: "Geist", ui-sans-serif, system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--surface-base);
+    color: var(--on-surface);
+    font-family: var(--font);
+    font-size: 14px;
+    line-height: 20px;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  :focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+  .skip {
+    position: absolute;
+    left: 16px;
+    top: -48px;
+    z-index: 80;
+    background: var(--primary);
+    color: var(--on-primary);
+    padding: 8px 12px;
+    border-radius: 4px;
+  }
+  .skip:focus { top: 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .caps {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .mono { font-family: var(--mono); font-size: 13px; line-height: 18px; }
+  h1, h2, h3, h4, p { margin: 0; }
+  ul, ol { margin: 0; padding: 0; list-style: none; }
+  button, input { font: inherit; }
+
+  /* Header */
+  .site-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 64px;
+    padding: 0 var(--margin);
+    background: var(--surface-lowest);
+    border-bottom: 1px solid var(--border);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .brand-name {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .nav {
+    display: none;
+    margin-left: 24px;
+    gap: 32px;
+  }
+  @media (min-width: 768px) {
+    .nav { display: flex; }
+  }
+  .nav a, .nav span {
+    padding-top: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--text-muted);
+  }
+  .nav a[aria-current="page"] {
+    color: var(--primary);
+    border-bottom: 2px solid var(--primary);
+    padding-bottom: 14px;
+  }
+  .header-meta {
+    display: none;
+    color: var(--text-muted);
+  }
+  @media (min-width: 640px) {
+    .header-meta { display: block; }
+  }
+
+  .wrap {
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: var(--margin);
+  }
+
+  /* Profile card */
+  .card {
+    background: var(--surface-lowest);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+  }
+  .card--shadow { box-shadow: 0 1px 2px rgb(13 28 45 / 6%); }
+  .profile { margin-bottom: 24px; overflow: hidden; }
+  .profile-top {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 24px;
+  }
+  @media (min-width: 1024px) {
+    .profile-top {
+      flex-direction: row;
+      align-items: center;
+    }
+  }
+  .profile-intro {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    min-width: 0;
+    flex: 1;
+  }
+  .icon-box {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: var(--surface-sunken);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .profile-title { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
+  .profile-copy { font-size: 13px; line-height: 18px; }
+  .meter-wrap {
+    flex-shrink: 0;
+  }
+  @media (min-width: 1024px) {
+    .meter-wrap { width: 340px; }
+  }
+  .meter-label {
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .meter {
+    height: 8px;
+    background: var(--border);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+  .meter > span {
+    display: block;
+    height: 100%;
+    width: 75%;
+    background: var(--secondary);
+  }
+
+  .fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 20px 24px;
+    border-top: 1px solid var(--border);
+  }
+  @media (min-width: 768px) {
+    .fields { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (min-width: 1024px) {
+    .fields { grid-template-columns: repeat(6, 1fr); }
+  }
+  .field {
+    text-align: left;
+    border-radius: var(--radius-chip);
+    border: 1px solid var(--border);
+    background: #fff;
+    padding: 10px 12px;
+    min-height: 44px;
+    cursor: pointer;
+    color: inherit;
+  }
+  .field:hover { background: var(--surface-sunken); }
+  .field__state { color: var(--secondary); }
+  .field__name {
+    display: block;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+  .field__value {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+  .field--inferred {
+    border-style: dashed;
+    border-color: var(--outline);
+    background: var(--surface-container-low);
+  }
+  .field--inferred .field__state { color: var(--on-surface); }
+  .field--inferred .field__value { font-weight: 400; font-size: 13px; }
+  .field--hard {
+    border-color: var(--warning-border);
+    background: var(--warning-bg);
+  }
+  .field--hard .field__state { color: var(--hard-label); }
+  .field--hard .field__name { color: var(--hard-text); }
+  .field--hard .field__value { color: var(--hard-text); font-size: 13px; }
+  .field--soft { border-style: dashed; }
+  .field--soft .field__state,
+  .field--soft .field__name { color: var(--text-muted); }
+  .field--soft .field__value { font-weight: 400; font-size: 13px; }
+
+  .map-head {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  @media (min-width: 640px) {
+    .map-head { flex-direction: row; align-items: center; }
+  }
+  .map-head h2 { font-size: 18px; font-weight: 600; }
+  .log {
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--border);
+    background: var(--surface-sunken);
+  }
+
+  .layout {
+    display: grid;
+    gap: 24px;
+    align-items: start;
+  }
+  @media (min-width: 1024px) {
+    .layout {
+      grid-template-columns: repeat(12, 1fr);
+    }
+    .col-main { grid-column: span 8; }
+    .col-side { grid-column: span 4; position: sticky; top: 16px; }
+  }
+  .stack { display: flex; flex-direction: column; gap: 16px; }
+
+  .chip {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .chip--likely { background: var(--fit-likely-bg); color: var(--fit-likely-fg); }
+  .chip--verify { background: var(--fit-verify-bg); color: var(--fit-verify-fg); }
+  .chip--adjacent { background: var(--surface-dim); color: var(--on-surface); }
+  .chip--held {
+    background: #fff;
+    color: var(--on-surface);
+    border: 1px solid var(--outline);
+  }
+
+  .opp { overflow: hidden; }
+  .opp-head { padding: 24px 24px 16px; }
+  .opp-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .muted { color: var(--text-muted); font-size: 13px; }
+  .opp-title-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+  }
+  .opp-title { font-size: 18px; font-weight: 600; line-height: 1.25; }
+  .award { text-align: right; flex-shrink: 0; }
+  .award strong { display: block; font-size: 18px; font-weight: 600; }
+  .award span { color: var(--text-muted); }
+
+  .blocks { border-top: 1px solid var(--border); font-size: 13px; }
+  .blocks section {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .blocks section:last-child { border-bottom: 0; }
+  .blocks h4 {
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+  .twin { background: var(--surface-sunken); }
+  .twin p { font-weight: 500; }
+
+  .opp-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    background: var(--surface-sunken);
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 20px;
+    border-radius: var(--radius-pill);
+    background: var(--primary);
+    color: var(--on-primary);
+    text-decoration: none;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .opp-simple { padding: 20px; }
+  .opp-simple h3 { font-size: 18px; font-weight: 600; margin: 8px 0 4px; }
+  .opp--held {
+    background: var(--surface-sunken);
+    border-style: dashed;
+    border-color: var(--outline);
+  }
+
+  .unlock {
+    border: 1px solid var(--warning-border);
+    background: var(--warning-bg);
+    padding: 20px;
+  }
+  .unlock .eyebrow { color: var(--hard-label); }
+  .unlock h2 { font-size: 18px; font-weight: 600; margin: 8px 0; }
+  fieldset { border: 0; padding: 0; margin: 16px 0 0; }
+  legend { color: var(--text-muted); margin-bottom: 8px; }
+  .choices {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .choice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    border-radius: var(--radius-pill);
+    border: 1px solid var(--outline);
+    background: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .choice:has(input:checked),
+  .choice--on {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-color: var(--primary);
+  }
+
+  .plan { padding: 20px; }
+  .plan h2 { color: var(--text-muted); }
+  .plan ol { margin-top: 12px; display: flex; flex-direction: column; gap: 12px; font-size: 13px; }
+  .plan li { display: flex; gap: 12px; }
+  .plan time {
+    font-family: var(--mono);
+    color: var(--text-muted);
+    width: 7.5rem;
+    flex-shrink: 0;
+  }
+  .fine { color: var(--text-muted); font-size: 13px; }
+
+  .icon { width: 16px; height: 16px; flex-shrink: 0; }
+  .icon--lg { width: 24px; height: 24px; }
+</style>
+</head>
+<body>
+<a class="skip" href="#map">Skip to opportunity map</a>
+
+<header class="site-header">
+  <div class="brand">
+    <p class="brand-name">Federal Catalyst</p>
+    <nav class="nav" aria-label="Primary">
+      <a href="#map" aria-current="page">Opportunity Map</a>
+      <span>Screening</span>
+      <span>Utah view</span>
+    </nav>
+  </div>
+  <p class="header-meta mono">1,703 live · 207,000 awards</p>
+</header>
+
+<main class="wrap" id="map">
+  <section class="card card--shadow profile" aria-labelledby="profile-heading">
+    <div class="profile-top">
+      <div class="profile-intro">
+        <div class="icon-box" aria-hidden="true">
+          <svg class="icon icon--lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 21V7l9-4 9 4v14"/><path d="M9 21V12h6v9"/></svg>
+        </div>
+        <div>
+          <h1 class="profile-title" id="profile-heading">Founder Profile</h1>
+          <p class="profile-copy">We build AI software that cuts admin work for nurses. Utah, Salt Lake, about $1M ARR, raised $2.5M. Looking for $500K–$2M for product and hospital pilots.</p>
+        </div>
+      </div>
+      <div class="meter-wrap">
+        <p class="caps meter-label" id="conf-label">Match confidence: Medium — 2 unknowns limiting results</p>
+        <div class="meter" role="meter" aria-labelledby="conf-label" aria-valuemin="0" aria-valuemax="8" aria-valuenow="6" aria-valuetext="6 of 8 fields known"><span></span></div>
+      </div>
+    </div>
+    <div class="fields" role="group" aria-label="Editable profile fields">
+      <button type="button" class="field">
+        <span class="caps field__state">Confirmed</span>
+        <span class="caps field__name">Industry</span>
+        <span class="field__value">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="#006c4a" stroke-width="2" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>
+          Health IT
+        </span>
+      </button>
+      <button type="button" class="field">
+        <span class="caps field__state">Confirmed</span>
+        <span class="caps field__name">NAICS</span>
+        <span class="field__value mono">541511</span>
+      </button>
+      <button type="button" class="field">
+        <span class="caps field__state">Confirmed</span>
+        <span class="caps field__name">Employees</span>
+        <span class="field__value">15</span>
+      </button>
+      <button type="button" class="field field--inferred">
+        <span class="caps field__state">Inferred</span>
+        <span class="caps field__name">Stage</span>
+        <span class="field__value">inferred from $1M ARR</span>
+      </button>
+      <button type="button" class="field field--hard">
+        <span class="caps field__state">Hard gap</span>
+        <span class="caps field__name">Ownership</span>
+        <span class="field__value">Unknown · blocks 4</span>
+      </button>
+      <button type="button" class="field field--soft">
+        <span class="caps field__state">Soft gap</span>
+        <span class="caps field__name">UEI / SAM.gov</span>
+        <span class="field__value">Not on file</span>
+      </button>
+    </div>
+  </section>
+
+  <div class="map-head">
+    <h2>Opportunity Map</h2>
+    <p class="log" aria-live="polite">Screening 1,703 open federal opportunities… 412 relevant awards found.</p>
+  </div>
+
+  <div class="layout">
+    <ol class="col-main stack">
+      <li>
+        <article class="card card--shadow opp">
+          <div class="opp-head">
+            <div class="opp-meta">
+              <span class="chip chip--likely">Likely fit</span>
+              <span class="muted">47 days left</span>
+            </div>
+            <div class="opp-title-row">
+              <div>
+                <h3 class="opp-title">NSF SBIR Phase I — Digital Health</h3>
+                <p class="muted" style="margin-top:4px">NSF · 4 Utah winners · median $261K across 412 similar awards</p>
+              </div>
+              <p class="award"><strong>$305K</strong><span class="caps">ceiling</span></p>
+            </div>
+          </div>
+          <div class="blocks">
+            <section>
+              <h4 class="caps">Why it fits</h4>
+              <p>U.S. small business, AI technology, healthcare application, active R&amp;D, funding need inside Phase I.</p>
+            </section>
+            <section>
+              <h4 class="caps">What could disqualify</h4>
+              <p>$1M ARR may read as productization. Majority U.S. ownership is required and unknown.</p>
+            </section>
+            <section>
+              <h4 class="caps">Who else got this money</h4>
+              <p>4 Utah winners. Median $261K across 412 similar awards.</p>
+            </section>
+            <section class="twin">
+              <h4 class="caps">Your funding twin</h4>
+              <p>12-person Provo medtech · Phase I $256K (2021) → Phase II $1.1M (2023) → $3M Army contract (2025)</p>
+            </section>
+            <section>
+              <h4 class="caps">What to do next</h4>
+              <p>You need a SAM.gov UEI — takes 2–4 weeks. Start now; this closes in 47 days.</p>
+            </section>
+          </div>
+          <div class="opp-foot">
+            <p class="mono muted">ID: NSF-23-456</p>
+            <a class="btn" href="opportunity.html">Open full brief</a>
+          </div>
+        </article>
+      </li>
+      <li>
+        <article class="card opp-simple">
+          <span class="chip chip--verify">Verify eligibility</span>
+          <h3>NIH R43 — Clinical Tech Innovations</h3>
+          <p>Needs a clinical research question, not only a sales motion. $275K · 120 days.</p>
+        </article>
+      </li>
+      <li>
+        <article class="card opp-simple">
+          <span class="chip chip--adjacent">Adjacent</span>
+          <h3>DoD BAA — Human Performance Optimization</h3>
+          <p>Nurse admin burden is not the stated problem. 14 days left.</p>
+        </article>
+      </li>
+      <li>
+        <article class="card opp-simple opp--held">
+          <span class="chip chip--held">Held · ownership</span>
+          <h3>SBA 8(a) Business Development — IT services</h3>
+          <p>Listed, not ranked. Visible until you confirm ownership.</p>
+        </article>
+      </li>
+      <li>
+        <article class="card opp-simple opp--held">
+          <span class="chip chip--held">Held · ownership</span>
+          <h3>WOSB Federal Contract Program — Health IT</h3>
+          <p>Woman-owned set-aside. Held because we will not guess ownership.</p>
+        </article>
+      </li>
+    </ol>
+
+    <aside class="col-side stack" aria-label="Refine profile and next actions">
+      <form class="card unlock">
+        <p class="caps eyebrow">Unlock</p>
+        <h2>Ownership unknown is holding 4 listings off the ranked set</h2>
+        <p>Answering does not create a grant. It decides whether set-asides should be scored.</p>
+        <fieldset>
+          <legend class="caps">Confirm ownership</legend>
+          <div class="choices">
+            <label class="choice choice--on"><input class="sr-only" type="radio" name="ownership" value="wosb" checked> Woman-owned</label>
+            <label class="choice"><input class="sr-only" type="radio" name="ownership" value="vosb"> Veteran-owned</label>
+            <label class="choice"><input class="sr-only" type="radio" name="ownership" value="neither"> Neither / other</label>
+            <label class="choice"><input class="sr-only" type="radio" name="ownership" value="skip"> Skip for now</label>
+          </div>
+        </fieldset>
+      </form>
+      <section class="card plan">
+        <h2 class="caps">Dated action plan</h2>
+        <ol>
+          <li><time datetime="2026-08-14">Aug 14, 2026</time><span>Start SAM.gov UEI — takes 2–4 weeks.</span></li>
+          <li><time datetime="2026-08-21">Aug 21, 2026</time><span>Read NSF Digital Health topic; flag research vs. ARR.</span></li>
+          <li><time datetime="2026-08-28">Aug 28, 2026</time><span>Review 4 Utah winners’ public abstracts.</span></li>
+        </ol>
+      </section>
+      <p class="fine">This is not a determination of eligibility.</p>
+    </aside>
+  </div>
+</main>
+<script>
+  document.querySelectorAll(".choice").forEach(function (label) {
+    label.addEventListener("click", function () {
+      document.querySelectorAll(".choice").forEach(function (el) { el.classList.remove("choice--on"); });
+      label.classList.add("choice--on");
+    });
+  });
+</script>
+</body>
+</html>

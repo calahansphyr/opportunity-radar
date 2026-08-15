@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Federal Catalyst — Layout v1</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink: "#141413",
+          muted: "#5C5A54",
+          paper: "#F4F1EA",
+          raised: "#FBF9F4",
+          rule: "#DDD7CB",
+          forest: "#1F4D3A",
+          forestsoft: "#E4EDE7",
+          ochre: "#8A5A12",
+          ochrebg: "#F3EBD8",
+          rust: "#7A3419",
+          rustbg: "#F3E4D8",
+          slate: "#4A5560"
+        },
+        fontFamily: {
+          sans: ["Geist", "ui-sans-serif", "system-ui"],
+          mono: ["JetBrains Mono", "ui-monospace", "monospace"]
+        }
+      }
+    }
+  }
+</script>
+<style>
+  html, body { background: #F4F1EA; color: #141413; }
+  .chip { font-size: 10px; letter-spacing: 0.06em; font-weight: 600; text-transform: uppercase; }
+  .label { font-size: 11px; letter-spacing: 0.05em; font-weight: 600; text-transform: uppercase; color: #5C5A54; }
+  .demo-btn[aria-current="true"] { background: #141413; color: #FBF9F4; }
+  .locked { filter: grayscale(0.35); opacity: 0.55; }
+  .field-confirmed { border-color: #1F4D3A; background: #E4EDE7; }
+  .field-inferred { border-style: dashed; border-color: #8A5A12; background: #F3EBD8; }
+  .field-soft { border-style: dashed; border-color: #DDD7CB; background: transparent; }
+  .field-hard { border-color: #7A3419; background: #F3E4D8; }
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen">
+
+<div class="sticky top-0 z-[60] bg-ink text-raised px-4 py-2 flex flex-wrap items-center gap-2 text-[11px] tracking-wide">
+  <span class="text-white/50 uppercase mr-2">Compare</span>
+  <a class="px-2.5 py-1 border border-white/20" href="index.html">Stitch visual</a>
+  <a class="px-2.5 py-1 border border-white/20 bg-raised text-ink" href="layout-v1.html">V1 layout (this)</a>
+  <span class="text-white/30 mx-2">|</span>
+  <button class="demo-btn px-2.5 py-1 border border-white/20" data-go="map" aria-current="true">1. Opportunity Map</button>
+  <button class="demo-btn px-2.5 py-1 border border-white/20" data-go="delta">2. After answering</button>
+  <button class="demo-btn px-2.5 py-1 border border-white/20" data-go="run">3. Screening log</button>
+  <button class="demo-btn px-2.5 py-1 border border-white/20" data-go="nomatch">4. No-match</button>
+  <button class="demo-btn px-2.5 py-1 border border-white/20" data-go="director">5. GOED director</button>
+</div>
+
+<div id="founder-shell">
+  <header class="border-b border-rule bg-raised px-6 h-14 flex items-center justify-between">
+    <div class="flex items-center gap-8">
+      <div>
+        <div class="text-[15px] font-semibold tracking-tight">Federal Catalyst</div>
+        <div class="text-[10px] uppercase tracking-[0.12em] text-muted">Opportunity intelligence</div>
+      </div>
+      <nav class="hidden md:flex gap-6 text-[11px] uppercase tracking-[0.08em]">
+        <a class="text-ink border-b-2 border-ink pb-3 pt-3" href="#" data-go="map">Opportunity Map</a>
+        <a class="text-muted pb-3 pt-3 hover:text-ink" href="#" data-go="run">Screening</a>
+        <a class="text-muted pb-3 pt-3 hover:text-ink" href="#" data-go="director">Utah view</a>
+      </nav>
+    </div>
+    <div class="text-[11px] font-mono text-muted">1,703 live · 207,000 awards</div>
+  </header>
+</div>
+
+<section id="screen-map" class="screen">
+  <div class="bg-raised border-b border-rule px-6 py-4">
+    <div class="flex flex-col lg:flex-row lg:items-start gap-5">
+      <div class="flex-1 min-w-0">
+        <div class="label mb-1">Company as stated</div>
+        <p class="text-[13px] leading-5 text-ink">We build AI software that cuts admin work for nurses. Utah, Salt Lake, about $1M ARR, raised $2.5M. Looking for $500K–$2M for product and hospital pilots.</p>
+      </div>
+      <div class="lg:w-[320px] shrink-0">
+        <div class="flex justify-between items-baseline mb-1.5">
+          <span class="label">Match confidence: Medium</span>
+          <span class="font-mono text-[11px] text-muted">6 / 8 fields</span>
+        </div>
+        <div class="h-1.5 bg-rule flex">
+          <div class="bg-forest w-[25%]"></div>
+          <div class="bg-forest w-[25%]"></div>
+          <div class="bg-forest w-[25%]"></div>
+          <div class="bg-ochre w-[12.5%]"></div>
+          <div class="bg-rule w-[12.5%]"></div>
+        </div>
+        <p class="mt-1.5 text-[12px] text-muted">2 unknowns limiting results</p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mt-4">
+      <button class="field-confirmed border px-2.5 py-2 text-left">
+        <div class="chip text-forest">Confirmed</div>
+        <div class="text-[11px] text-muted mt-1">Industry</div>
+        <div class="text-[13px] font-medium">Health IT</div>
+      </button>
+      <button class="field-confirmed border px-2.5 py-2 text-left">
+        <div class="chip text-forest">Confirmed</div>
+        <div class="text-[11px] text-muted mt-1">NAICS</div>
+        <div class="text-[13px] font-mono">541511</div>
+      </button>
+      <button class="field-confirmed border px-2.5 py-2 text-left">
+        <div class="chip text-forest">Confirmed</div>
+        <div class="text-[11px] text-muted mt-1">Employees</div>
+        <div class="text-[13px] font-medium">15</div>
+      </button>
+      <button class="field-inferred border px-2.5 py-2 text-left">
+        <div class="chip text-ochre">Inferred</div>
+        <div class="text-[11px] text-muted mt-1">Stage</div>
+        <div class="text-[13px] font-medium">from $1M ARR</div>
+      </button>
+      <button class="field-hard border px-2.5 py-2 text-left">
+        <div class="chip text-rust">Hard gap</div>
+        <div class="text-[11px] text-muted mt-1">Ownership</div>
+        <div class="text-[13px] font-medium">Unknown · blocks 4</div>
+      </button>
+      <button class="field-soft border px-2.5 py-2 text-left">
+        <div class="chip text-muted">Soft gap</div>
+        <div class="text-[11px] text-muted mt-1">UEI / SAM.gov</div>
+        <div class="text-[13px] font-medium">Not on file</div>
+      </button>
+    </div>
+  </div>
+
+  <main class="max-w-[1440px] mx-auto px-6 py-6 grid lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-8 space-y-3">
+      <div class="flex items-end justify-between mb-1">
+        <h1 class="text-[18px] font-semibold tracking-tight">Opportunity Map</h1>
+        <p class="font-mono text-[11px] text-muted">7 shown · 4 held pending ownership</p>
+      </div>
+
+      <article class="bg-raised border border-ink">
+        <div class="px-5 py-4 flex items-start justify-between gap-4 border-b border-rule">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="chip bg-forestsoft text-forest px-2 py-0.5">Likely fit</span>
+              <span class="font-mono text-[11px] text-muted">closes in 47 days</span>
+            </div>
+            <h2 class="text-[18px] font-semibold leading-snug">NSF SBIR Phase I — Digital Health</h2>
+            <p class="text-[13px] text-muted mt-1">Up to $305K · NSF · America’s Seed Fund</p>
+          </div>
+          <div class="text-right shrink-0">
+            <div class="font-mono text-[18px] font-medium">$305K</div>
+            <div class="text-[11px] text-muted">ceiling</div>
+          </div>
+        </div>
+        <div class="divide-y divide-rule text-[13px] leading-5">
+          <section class="px-5 py-3">
+            <h3 class="label mb-1">Why it fits</h3>
+            <p>U.S. small business, AI technology with an active R&amp;D component, healthcare application, and a funding need inside the Phase I range. NSF has funded digital health software that reduces clinical administrative load.</p>
+          </section>
+          <section class="px-5 py-3">
+            <h3 class="label mb-1">What could disqualify</h3>
+            <p>Phase I expects work that is still technically uncertain. If the product is already commercially deployed at $1M ARR, reviewers may treat this as productization rather than research. Majority U.S. ownership is required and is currently unknown.</p>
+          </section>
+          <section class="px-5 py-3">
+            <h3 class="label mb-1">Who else got this money</h3>
+            <p>4 Utah winners. Median $261K across 412 similar awards.</p>
+          </section>
+          <section class="px-5 py-3 bg-paper">
+            <h3 class="label mb-1">Your funding twin</h3>
+            <p class="font-medium">12-person Provo medtech · Phase I $256K (2021) → Phase II $1.1M (2023) → $3M Army contract (2025)</p>
+          </section>
+          <section class="px-5 py-3">
+            <h3 class="label mb-1">What to do next</h3>
+            <p>You need a SAM.gov UEI — takes 2–4 weeks. Start that now; the solicitation will close before a late registration clears.</p>
+          </section>
+        </div>
+      </article>
+
+      <article class="bg-raised border border-rule px-5 py-4 flex items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="chip bg-ochrebg text-ochre px-2 py-0.5">Verify eligibility</span>
+            <span class="font-mono text-[11px] text-muted">NIH / HHS</span>
+          </div>
+          <h2 class="text-[15px] font-semibold">NIH R43 — Clinical Tech Innovations</h2>
+          <p class="text-[13px] text-muted mt-1">Hospital workflow software can fit if you can name a clinical research question, not only a sales motion.</p>
+        </div>
+        <div class="text-right shrink-0 font-mono text-[15px]">$275K</div>
+      </article>
+
+      <article class="bg-raised border border-rule px-5 py-4 flex items-start justify-between gap-4">
+        <div>
+          <div class="flex items-center gap-2 mb-2">
+            <span class="chip bg-paper text-slate px-2 py-0.5 border border-rule">Adjacent</span>
+            <span class="font-mono text-[11px] text-muted">DoD · 14 days</span>
+          </div>
+          <h2 class="text-[15px] font-semibold">DoD BAA — Human Performance Optimization</h2>
+          <p class="text-[13px] text-muted mt-1">Nurse admin burden is not the stated problem. Only pursue if you can reframe for operator cognitive load.</p>
+        </div>
+        <div class="text-right shrink-0 font-mono text-[13px] text-muted">Varies</div>
+      </article>
+
+      <article class="locked bg-raised border border-rule px-5 py-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="chip bg-rustbg text-rust px-2 py-0.5">Held · ownership</span>
+              <span class="chip border border-rule px-2 py-0.5">Probably not a fit until confirmed</span>
+            </div>
+            <h2 class="text-[15px] font-semibold">SBA 8(a) Business Development — IT services set-aside</h2>
+            <p class="text-[13px] mt-1">Visible but not ranked. Socially and economically disadvantaged ownership would need to be confirmed. This is one of 4 listings held on the hard gap.</p>
+          </div>
+          <div class="text-right shrink-0 font-mono text-[13px]">held</div>
+        </div>
+      </article>
+      <article class="locked bg-raised border border-rule px-5 py-4">
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="chip bg-rustbg text-rust px-2 py-0.5">Held · ownership</span>
+            </div>
+            <h2 class="text-[15px] font-semibold">WOSB Federal Contract Program — Health IT</h2>
+            <p class="text-[13px] mt-1">Woman-owned set-aside. Greyed because we will not guess ownership.</p>
+          </div>
+          <div class="font-mono text-[13px]">held</div>
+        </div>
+      </article>
+    </div>
+
+    <aside class="lg:col-span-4 space-y-3">
+      <div class="bg-rustbg border border-rust px-4 py-4">
+        <div class="chip text-rust mb-2">Unlock</div>
+        <h2 class="text-[16px] font-semibold leading-snug">Ownership is unknown. Four set-asides stay held.</h2>
+        <p class="text-[13px] mt-2 leading-5">Woman-owned, veteran-owned, HUBZone, and 8(a) listings are on the map but not ranked. Confirming ownership does not create a grant. It decides whether those four should move from held to scored.</p>
+        <div class="mt-3 grid grid-cols-2 gap-1">
+          <button class="bg-ink text-raised text-[12px] py-2">Woman-owned</button>
+          <button class="bg-raised border border-rule text-[12px] py-2">Veteran-owned</button>
+          <button class="bg-raised border border-rule text-[12px] py-2">Neither / other</button>
+          <button class="bg-raised border border-rule text-[12px] py-2">Skip for now</button>
+        </div>
+      </div>
+      <div class="bg-raised border border-rule px-4 py-4">
+        <div class="label mb-2">Dated action plan</div>
+        <ol class="space-y-3 text-[13px]">
+          <li class="flex gap-3"><span class="font-mono text-muted w-8 shrink-0">D0</span><span>Start SAM.gov UEI. You need a SAM.gov UEI — takes 2–4 weeks.</span></li>
+          <li class="flex gap-3"><span class="font-mono text-muted w-8 shrink-0">D7</span><span>Read NSF SBIR Phase I Digital Health topic; flag the research question vs. current ARR.</span></li>
+          <li class="flex gap-3"><span class="font-mono text-muted w-8 shrink-0">D14</span><span>Call the 4 Utah winners’ public abstracts. Do not contact NIH until eligibility is verified.</span></li>
+        </ol>
+      </div>
+      <p class="text-[11px] text-muted leading-4 px-1">This is not a determination of eligibility. Confirm program rules on Grants.gov and the agency solicitation.</p>
+    </aside>
+  </main>
+</section>
+
+<section id="screen-delta" class="screen hidden">
+  <div class="bg-forest text-raised px-6 py-2.5 flex flex-wrap items-center justify-between gap-2 text-[13px]">
+    <p><span class="font-semibold">+4 opportunities unlocked</span> · match confidence Medium → High</p>
+    <p class="font-mono text-[11px] opacity-80">Ownership confirmed as neither set-aside · 4 listings reclassified Adjacent / Probably not a fit</p>
+  </div>
+  <div class="bg-raised border-b border-rule px-6 py-4">
+    <div class="flex justify-between items-baseline mb-1.5 max-w-md">
+      <span class="label">Match confidence: High</span>
+      <span class="font-mono text-[11px] text-muted">7 / 8 fields</span>
+    </div>
+    <div class="h-1.5 bg-rule max-w-md flex">
+      <div class="bg-forest w-[87.5%]"></div>
+      <div class="bg-rule w-[12.5%]"></div>
+    </div>
+    <p class="mt-1.5 text-[12px] text-muted">1 remaining unknown: SAM.gov UEI (soft gap — does not hide results)</p>
+    <div class="grid grid-cols-2 md:grid-cols-6 gap-2 mt-4">
+      <div class="field-confirmed border px-2.5 py-2"><div class="chip text-forest">Confirmed</div><div class="text-[11px] text-muted mt-1">Ownership</div><div class="text-[13px] font-medium">Neither set-aside</div></div>
+      <div class="field-soft border px-2.5 py-2"><div class="chip text-muted">Soft gap</div><div class="text-[11px] text-muted mt-1">UEI / SAM.gov</div><div class="text-[13px] font-medium">Not on file</div></div>
+    </div>
+  </div>
+  <main class="max-w-[1440px] mx-auto px-6 py-6 space-y-3">
+    <p class="font-mono text-[11px] text-muted">State change: held → scored. NSF SBIR still first. Set-asides moved to Probably not a fit, still listed.</p>
+    <article class="bg-raised border border-ink px-5 py-4 flex justify-between">
+      <div>
+        <span class="chip bg-forestsoft text-forest px-2 py-0.5">Likely fit</span>
+        <h2 class="text-[15px] font-semibold mt-2">NSF SBIR Phase I — Digital Health</h2>
+      </div>
+      <div class="font-mono">$305K</div>
+    </article>
+    <article class="bg-raised border border-rule px-5 py-4 opacity-70">
+      <span class="chip border border-rule px-2 py-0.5">Probably not a fit</span>
+      <h2 class="text-[15px] font-semibold mt-2">SBA 8(a) Business Development — IT services set-aside</h2>
+      <p class="text-[13px] text-muted mt-1">Scored after your answer. You are not claiming 8(a) status. Left visible so the exclusion is inspectable.</p>
+    </article>
+    <article class="bg-raised border border-rule px-5 py-4 opacity-70">
+      <span class="chip border border-rule px-2 py-0.5">Probably not a fit</span>
+      <h2 class="text-[15px] font-semibold mt-2">WOSB Federal Contract Program — Health IT</h2>
+    </article>
+  </main>
+</section>
+
+<section id="screen-run" class="screen hidden">
+  <div class="bg-raised border-b border-rule px-6 py-4">
+    <div class="label mb-1">Working from</div>
+    <p class="text-[13px]">We build AI software that cuts admin work for nurses. Utah, Salt Lake, about $1M ARR, raised $2.5M. Looking for $500K–$2M for product and hospital pilots.</p>
+    <div class="mt-3 flex gap-2 flex-wrap text-[12px]">
+      <span class="field-inferred border px-2 py-1">Health IT · inferred</span>
+      <span class="field-inferred border px-2 py-1">NAICS 541511 · inferred</span>
+      <span class="field-confirmed border px-2 py-1">Utah · confirmed</span>
+      <span class="field-hard border px-2 py-1">Ownership · hard gap</span>
+    </div>
+  </div>
+  <main class="max-w-[1440px] mx-auto px-6 py-6 grid lg:grid-cols-12 gap-6">
+    <div class="lg:col-span-7">
+      <h1 class="text-[18px] font-semibold mb-3">Screening</h1>
+      <p class="text-[13px] text-muted mb-4">Results are not withheld. Ranked items appear as soon as they clear the first pass. Held items stay on the list in grey.</p>
+      <article class="bg-raised border border-rule px-5 py-4 mb-2">
+        <span class="chip bg-forestsoft text-forest px-2 py-0.5">Likely fit · provisional</span>
+        <h2 class="text-[15px] font-semibold mt-2">NSF SBIR Phase I — Digital Health</h2>
+        <p class="text-[13px] text-muted">Matched on AI + healthcare R&amp;D. Precedent still loading.</p>
+      </article>
+      <article class="locked bg-raised border border-rule px-5 py-4">
+        <span class="chip bg-rustbg text-rust px-2 py-0.5">Held · ownership</span>
+        <h2 class="text-[15px] font-semibold mt-2">WOSB Federal Contract Program — Health IT</h2>
+      </article>
+    </div>
+    <aside class="lg:col-span-5">
+      <div class="bg-ink text-raised px-4 py-4 font-mono text-[12px] leading-[18px] min-h-[280px]">
+        <div class="text-white/40 text-[10px] uppercase tracking-widest mb-3">Activity · 00:41 elapsed</div>
+        <p>Screening 1,703 open federal opportunities…</p>
+        <p class="mt-2">412 relevant historical awards in Health IT / NAICS 541511</p>
+        <p class="mt-2">Agencies in play: NSF, NIH/HHS, SBA, DoD</p>
+        <p class="mt-2">4 Utah SBIR winners tagged Digital Health</p>
+        <p class="mt-2 text-ochrebg">Holding 4 listings pending ownership</p>
+        <p class="mt-2">Twin search: 12-person Provo medtech path found</p>
+        <p class="mt-2 opacity-50">Writing explanations…</p>
+      </div>
+    </aside>
+  </main>
+</section>
+
+<section id="screen-nomatch" class="screen hidden">
+  <div class="bg-raised border-b border-rule px-6 py-4">
+    <p class="text-[13px]">Marketplace connecting parents with local youth activities and enrichment programs. Utah technology startup. 8 employees. $750K revenue. Raised $1M. Need $250K–$1M for expansion and technology development.</p>
+    <div class="mt-3 flex gap-2 flex-wrap">
+      <span class="field-confirmed border px-2 py-1 text-[12px]">Consumer / workforce</span>
+      <span class="field-inferred border px-2 py-1 text-[12px]">Stage inferred from $750K revenue</span>
+      <span class="field-soft border px-2 py-1 text-[12px]">Federal grant fit · weak</span>
+    </div>
+  </div>
+  <main class="max-w-[800px] mx-auto px-6 py-10">
+    <p class="label mb-2">Assessment</p>
+    <h1 class="text-[24px] font-semibold tracking-tight leading-8">Federal grants probably aren’t your path right now.</h1>
+    <p class="mt-4 text-[15px] leading-6">We screened 1,703 open federal opportunities. Nothing in the current set funds a consumer marketplace for youth activities at this stage. Forcing a match would mean stretching education or workforce programs past what they actually pay for.</p>
+    <div class="mt-8 border-t border-rule pt-6 space-y-5 text-[14px] leading-6">
+      <div>
+        <h2 class="label mb-1">Why this is the honest answer</h2>
+        <p>Federal R&amp;D (SBIR/STTR) expects a technical uncertainty and a government customer or dual-use path. A local enrichment marketplace is a commercial consumer product. NIH, NSF, and DoD topics did not map without inventing a research problem you did not describe.</p>
+      </div>
+      <div>
+        <h2 class="label mb-1">What we did look at</h2>
+        <p>Workforce development, Department of Education, youth programs, small-business counseling, and community development. Those exist as technical assistance and local partnerships, not as $250K–$1M awards to a for-profit marketplace.</p>
+      </div>
+      <div>
+        <h2 class="label mb-1">Adjacent, if you still want a public-sector path</h2>
+        <ul class="list-disc pl-5 space-y-1">
+          <li>SBA counseling and Utah GOED small-business programs (advice, not capital of this size).</li>
+          <li>Municipal or school-district procurement for after-school programming — a customer, not a grant.</li>
+          <li>If the product shifts toward workforce credentialing or measurable youth outcomes, re-run the map. The answer can change.</li>
+        </ul>
+      </div>
+      <p class="text-[12px] text-muted">This is not a finding that you are ineligible for every public dollar. It is a finding that live federal grant listings are a poor use of the next 40–200 hours.</p>
+    </div>
+  </main>
+</section>
+
+<section id="screen-director" class="screen hidden">
+  <header class="border-b border-rule bg-raised px-6 h-14 flex items-center justify-between">
+    <div>
+      <div class="text-[15px] font-semibold tracking-tight">Federal Catalyst</div>
+      <div class="text-[10px] uppercase tracking-[0.12em] text-muted">GOED · State view</div>
+    </div>
+    <div class="font-mono text-[11px] text-muted">Utah · live federal + historical awards</div>
+  </header>
+  <main class="px-6 py-6 max-w-[1440px] mx-auto">
+    <div class="flex items-end justify-between mb-6">
+      <div>
+        <h1 class="text-[18px] font-semibold">What the state can see</h1>
+        <p class="text-[13px] text-muted mt-1">Not a founder screen. Pipeline of Utah companies against 1,703 live opportunities and 207,000 awards.</p>
+      </div>
+      <p class="font-mono text-[11px] text-muted">As of 14 Aug 2026 · prototype</p>
+    </div>
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div class="bg-raised border border-rule px-4 py-3">
+        <div class="label">Companies mapped</div>
+        <div class="text-[24px] font-semibold mt-1">5</div>
+        <div class="text-[12px] text-muted">hackathon standard cases</div>
+      </div>
+      <div class="bg-raised border border-rule px-4 py-3">
+        <div class="label">Live opportunities screened</div>
+        <div class="text-[24px] font-semibold mt-1">1,703</div>
+        <div class="text-[12px] text-muted">per company pass</div>
+      </div>
+      <div class="bg-raised border border-rule px-4 py-3">
+        <div class="label">Historical awards in play</div>
+        <div class="text-[24px] font-semibold mt-1">207,000</div>
+        <div class="text-[12px] text-muted">precedent corpus</div>
+      </div>
+      <div class="bg-raised border border-rule px-4 py-3">
+        <div class="label">Honest no-match</div>
+        <div class="text-[24px] font-semibold mt-1">1 / 5</div>
+        <div class="text-[12px] text-muted">consumer / workforce case</div>
+      </div>
+    </div>
+    <div class="grid lg:grid-cols-12 gap-6">
+      <div class="lg:col-span-7 bg-raised border border-rule">
+        <div class="px-4 py-3 border-b border-rule label">Standard test cases</div>
+        <table class="w-full text-[13px]">
+          <thead class="text-left text-[11px] uppercase tracking-wide text-muted border-b border-rule">
+            <tr>
+              <th class="px-4 py-2 font-medium">Company</th>
+              <th class="px-4 py-2 font-medium">Lead fit</th>
+              <th class="px-4 py-2 font-medium">Agencies</th>
+              <th class="px-4 py-2 font-medium">Hard gaps</th>
+              <th class="px-4 py-2 font-medium">Utah precedent</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-rule">
+            <tr>
+              <td class="px-4 py-2.5 font-medium">AI Healthcare · Salt Lake · 15 emp</td>
+              <td class="px-4 py-2.5">NSF SBIR Phase I — Digital Health</td>
+              <td class="px-4 py-2.5 font-mono text-[12px]">NSF, NIH</td>
+              <td class="px-4 py-2.5 text-rust">Ownership</td>
+              <td class="px-4 py-2.5">4 winners</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5 font-medium">Advanced manufacturing · 35 emp</td>
+              <td class="px-4 py-2.5">DoD / NASA manufacturing scale-up</td>
+              <td class="px-4 py-2.5 font-mono text-[12px]">DoD, NASA, DOE</td>
+              <td class="px-4 py-2.5">Facility NAICS</td>
+              <td class="px-4 py-2.5">aerospace awards</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5 font-medium">Climate / water · 10 emp</td>
+              <td class="px-4 py-2.5">EPA / DOE water-loss sensing</td>
+              <td class="px-4 py-2.5 font-mono text-[12px]">EPA, DOE</td>
+              <td class="px-4 py-2.5">Municipal customer</td>
+              <td class="px-4 py-2.5">infra pilots</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5 font-medium">Cybersecurity · 22 emp</td>
+              <td class="px-4 py-2.5">DHS / DoD SBIR threat detection</td>
+              <td class="px-4 py-2.5 font-mono text-[12px]">DHS, DoD</td>
+              <td class="px-4 py-2.5">Clearance</td>
+              <td class="px-4 py-2.5">cyber recipients</td>
+            </tr>
+            <tr>
+              <td class="px-4 py-2.5 font-medium">Youth marketplace · 8 emp</td>
+              <td class="px-4 py-2.5 text-muted">Federal grants probably aren’t your path right now.</td>
+              <td class="px-4 py-2.5 font-mono text-[12px]">—</td>
+              <td class="px-4 py-2.5">n/a</td>
+              <td class="px-4 py-2.5">none forced</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="lg:col-span-5 space-y-3">
+        <div class="bg-raised border border-rule px-4 py-4">
+          <div class="label mb-3">Where Utah companies actually get money</div>
+          <ul class="space-y-2 text-[13px] font-mono">
+            <li class="flex justify-between"><span>NSF SBIR/STTR</span><span>412 similar awards · median $261K</span></li>
+            <li class="flex justify-between"><span>NIH / HHS</span><span>clinical tech, digital health</span></li>
+            <li class="flex justify-between"><span>DoD / NASA</span><span>manufacturing, cyber, dual-use</span></li>
+            <li class="flex justify-between"><span>EPA / DOE</span><span>water, climate hardware</span></li>
+          </ul>
+        </div>
+        <div class="bg-raised border border-rule px-4 py-4 text-[13px] leading-5">
+          <div class="label mb-2">Director read</div>
+          <p>The product is doing the job if a GOED officer can see, in one pass, which Utah firms have a live federal path, which are blocked on a form (UEI, ownership), and which should be steered to customers or state programs instead of Grants.gov. The youth marketplace row is a feature, not a miss.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</section>
+
+<script>
+  const screens = ["map", "delta", "run", "nomatch", "director"];
+  function show(id) {
+    screens.forEach((s) => {
+      document.getElementById("screen-" + s).classList.toggle("hidden", s !== id);
+    });
+    document.querySelectorAll(".demo-btn").forEach((b) => {
+      b.setAttribute("aria-current", b.getAttribute("data-go") === id ? "true" : "false");
+    });
+    const founder = document.getElementById("founder-shell");
+    founder.style.display = id === "director" ? "none" : "block";
+  }
+  document.querySelectorAll("[data-go]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      e.preventDefault();
+      show(el.getAttribute("data-go"));
+    });
+  });
+</script>
+</body>
+</html>
