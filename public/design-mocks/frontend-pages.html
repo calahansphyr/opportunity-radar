@@ -69,7 +69,13 @@
     border-left: 1px solid var(--color-border-ice);
     box-shadow: var(--shadow-drawer);
     display: flex; flex-direction: column;
+    /* Slides in from the edge so it is legible as a panel arriving OVER the
+       rail, not the rail being replaced. */
+    transition: transform 260ms var(--ease-emphasized, cubic-bezier(.2,0,0,1));
   }
+  .mk-drawer[data-open="false"] { transform: translateX(100%); }
+  .mk-drawer[data-open="true"] { transform: translateX(0); }
+  @media (prefers-reduced-motion: reduce) { .mk-drawer { transition: none; } }
   .mk-fab { position: fixed; right: 24px; bottom: 24px; z-index: 60; }
 
   /* Nav overflow guard. .or-nav pads 64px a side and never shrinks its link
@@ -178,10 +184,15 @@
      or-opp__head uses) so it separates without spending a new colour —
      rule 1 keeps one blue, rule 2 keeps the status hues for status. */
   .mk-ask {
-    background: rgba(205, 229, 255, .2);
-    border-color: var(--color-primary-container);
+    background: var(--color-tertiary-fixed);
+    border-color: var(--color-tertiary-fixed-dim);
   }
+  /* Labels inside pick up the tertiary ink so the card reads as one object
+     and the small type gains contrast (7.23:1 vs 4.59:1 on the default). */
+  .mk-ask .or-kv__label,
+  .mk-ask .mk-label { color: var(--color-on-tertiary-fixed-variant); }
   .mk-ask .or-option { background: var(--color-surface-container-lowest); }
+  .mk-ask .or-option--checked { border-color: var(--color-tertiary); }
 
   /* Icon-button popovers for filter and sort. Traditional list chrome:
      the controls collapse to glyphs and open their options on demand. */
@@ -213,7 +224,7 @@
   .mk-between { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
   .mk-num { font-family: var(--font-label); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--color-text-deep); }
   .mk-stack { display: flex; flex-direction: column; gap: 12px; }
-  .mk-anno { font-family: var(--font-label); font-size: 11px; color: var(--color-tertiary); background: var(--color-tertiary-fixed); border-radius: var(--radius-default); padding: 4px 8px; display: inline-block; }
+  .mk-anno { font-family: var(--font-label); font-size: 11px; color: var(--color-on-surface-variant); background: var(--color-surface-container); border-radius: var(--radius-default); padding: 4px 8px; display: inline-block; }
   .mk-vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
   [hidden] { display: none !important; }
 </style>
@@ -223,7 +234,7 @@
 <div class="mk-banner">
   <b>MOCKUP · feat/frontend-pages</b>
   <span>Map chrome from screen-opportunity-map.jsx — no side nav, centered 1440, 3/6/3, fixed 384 drawer</span>
-  <span style="color:var(--color-tertiary-fixed-dim)">Purple = design note</span>
+  <span style="color:var(--color-outline-variant)">Grey chips = design note</span>
 </div>
 
 <!-- Plain .or-nav — the map's nav is solid; glass is workspace chrome. -->
@@ -434,12 +445,12 @@
         <div class="or-opp__foot"><span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 80 hours</span><div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight</button></div></div>
       </article>
 
-      <div class="or-card or-card--dashed">
+      <div class="or-card">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
           <div>
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--neutral">Held - Missing Data</span><span class="mk-label">ID: NIH-R43</span></div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--caution">Uncertain eligibility</span><span class="mk-label">ID: NIH-R43</span></div>
             <h4 style="margin:0;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">NIH SBIR (NINR)</h4>
-            <p style="margin:4px 0 0;max-width:640px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">National Institute of Nursing Research grants. Highly relevant, but we need ownership details to confirm eligibility against VC backing limits.</p>
+            <p style="margin:4px 0 0;max-width:640px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">National Institute of Nursing Research grants. Highly relevant. We can't confirm eligibility against the VC backing limits until we know your ownership split.</p>
           </div>
           <button class="or-btn or-btn--text">Resolve<span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">edit</span></button>
         </div>
@@ -612,8 +623,8 @@
       </div>
 
       <!-- The honest half — 57% of unknown-gated dollars, per readiness.ts -->
-      <div class="or-card or-card--dashed">
-        <div class="mk-between" style="margin-bottom:8px"><span class="or-badge or-badge--neutral">Not machine-readable</span><span class="mk-num" style="color:var(--color-outline)">$1.4M</span></div>
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><span class="or-badge or-badge--caution">Uncertain eligibility</span><span class="mk-num" style="color:var(--color-outline)">$1.4M</span></div>
         <h4 style="margin:0 0 4px;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">We can't determine these — and neither can any answer you give us</h4>
         <p style="margin:0 0 16px;max-width:640px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">11 programs state eligibility in prose we can't parse into a rule — “applicants must demonstrate institutional capacity”. We rank these <b>verify eligibility</b> rather than guessing, and point you at the paragraph to read.</p>
         <div class="mk-stack">
@@ -749,7 +760,7 @@
 </div><!-- /mk-scroll -->
 
 <!-- AssistantDrawer — screen-assistant-drawer.jsx, faithfully -->
-<aside class="mk-drawer" id="drawer" aria-label="Assistant" hidden>
+<aside class="mk-drawer" id="drawer" aria-label="Assistant" data-open="false" aria-hidden="true">
   <div style="display:flex;align-items:center;justify-content:space-between;padding:24px;border-bottom:1px solid var(--color-border-ice)">
     <h2 style="margin:0;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">Assistant</h2>
     <div style="display:flex;gap:4px">
@@ -889,7 +900,9 @@
 
   const drawer = document.getElementById("drawer"), fab = document.getElementById("fab");
   function setDrawer(open) {
-    drawer.hidden = !open; fab.hidden = open;
+    drawer.dataset.open = String(open);
+    drawer.setAttribute("aria-hidden", String(!open));
+    fab.hidden = open;
     document.body.dataset.drawer = String(open);
   }
   document.getElementById("drawer-close").addEventListener("click", () => setDrawer(false));
