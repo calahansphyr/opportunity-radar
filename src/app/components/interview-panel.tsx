@@ -7,7 +7,17 @@
 import { useState } from "react";
 import type { GateField, InterviewQuestion } from "@/lib/types";
 import { isRequiredField } from "@/lib/engine/readiness";
+import FieldWidget, { hasRichWidget } from "./field-widgets";
 import type { QuickReply } from "./shared";
+
+/** Small brand tag for questions ranking can't run without. */
+function RequiredTag() {
+  return (
+    <span className="ml-2 rounded-full bg-soft px-2 py-0.5 align-middle font-mono text-[10px] font-semibold text-brand">
+      needed for ranking
+    </span>
+  );
+}
 
 export default function InterviewPanel({
   questions,
@@ -29,9 +39,9 @@ export default function InterviewPanel({
   if (questions.length === 0 && !askCapitalNeed) return null;
 
   return (
-    <section id="interview" className="space-y-2 rounded-lg border border-neutral-800 bg-neutral-900 p-4">
-      <p className="text-xs font-semibold uppercase tracking-wide text-neutral-500">
-        Answer to unlock more
+    <section id="interview" className="space-y-2 rounded-2xl border border-hairline bg-card p-4 shadow-card">
+      <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.09em] text-faint">
+        Radar is asking
       </p>
       {askCapitalNeed && <CapitalNeedCard disabled={busy} onSend={onSend} />}
       {questions.map((q) => (
@@ -39,14 +49,14 @@ export default function InterviewPanel({
       ))}
       {quickReplies.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 pt-1">
-          <span className="text-xs text-neutral-500">Quick answers:</span>
+          <span className="font-mono text-[11px] text-faint">Quick answers:</span>
           {quickReplies.map((r) => (
             <button
               key={r.label}
               disabled={busy}
               onClick={() => onSend(r.message)}
               title={r.message}
-              className="rounded-full border border-blue-500/40 bg-blue-500/10 px-3 py-1 text-xs text-blue-300 hover:bg-blue-500/20 disabled:opacity-40"
+              className="rounded-full bg-soft px-3 py-1 font-mono text-[11px] font-semibold text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-40"
             >
               {r.label}
             </button>
@@ -67,11 +77,11 @@ export default function InterviewPanel({
           value={chat}
           onChange={(e) => setChat(e.target.value)}
           placeholder="Or answer in your own words — one message can cover several questions…"
-          className="min-w-0 flex-1 rounded-lg border border-neutral-700 bg-neutral-950 px-3 py-2 text-sm placeholder:text-neutral-600 focus:border-neutral-500 focus:outline-none"
+          className="min-w-0 flex-1 rounded-xl border border-hairline bg-[#FBFCFE] px-3 py-2 text-[13.5px] text-ink placeholder:text-faint focus:border-brand focus:outline-none"
         />
         <button
           disabled={busy || !chat.trim()}
-          className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl bg-brand px-4 py-2 font-mono text-[12.5px] font-semibold text-white transition-colors hover:bg-brand-strong disabled:cursor-not-allowed disabled:opacity-40"
         >
           Send
         </button>
@@ -91,36 +101,19 @@ function CapitalNeedCard({
 }) {
   const [val, setVal] = useState("");
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950 p-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-hairline border-l-[3px] border-l-accent bg-[#FBFCFE] p-3.5">
       <div className="min-w-0 flex-1">
-        <p className="text-sm">
+        <p className="text-[13.5px] font-semibold text-ink">
           Roughly how much funding are you looking for?
-          <span className="ml-2 rounded-full border border-blue-500/50 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300 align-middle">
-            needed for ranking
-          </span>
+          <RequiredTag />
         </p>
-        <p className="text-xs text-neutral-500">Needed before we can rank accurately</p>
+        <p className="mt-0.5 font-mono text-[11px] text-good">Needed before we can rank accurately</p>
       </div>
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          if (val.trim()) onSend(`We're looking for about ${val.trim()} in funding.`);
-        }}
-        className="flex gap-2"
-      >
-        <input
-          value={val}
-          onChange={(e) => setVal(e.target.value)}
-          placeholder="$500K"
-          className="w-28 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm focus:border-neutral-500 focus:outline-none"
-        />
-        <button
-          disabled={disabled || !val.trim()}
-          className="rounded-md border border-neutral-700 px-3 py-1 text-sm hover:bg-neutral-800 disabled:opacity-40"
-        >
-          Answer
-        </button>
-      </form>
+      <FieldWidget
+        field="capitalNeed"
+        disabled={disabled}
+        onPick={(a) => onSend(`We're looking for about ${a.sayAs} in funding.`)}
+      />
     </div>
   );
 }
@@ -135,32 +128,47 @@ function QuestionCard({
   onAnswer: (field: GateField, value: unknown) => void;
 }) {
   const [val, setVal] = useState("");
+  // Purpose-built control (map, pickers) — full-width layout.
+  if (hasRichWidget(q.field)) {
+    return (
+      <div className="space-y-2.5 rounded-xl border border-hairline border-l-[3px] border-l-accent bg-[#FBFCFE] p-3.5">
+        <div>
+          <p className="text-[13.5px] font-semibold text-ink">
+            {q.question}
+            {isRequiredField(q.field) && <RequiredTag />}
+          </p>
+          <p className="mt-0.5 font-mono text-[11px] text-good">{q.whyAsking}</p>
+        </div>
+        <FieldWidget
+          field={q.field}
+          disabled={disabled}
+          onPick={(a) => onAnswer(q.field, a.value)}
+        />
+      </div>
+    );
+  }
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-neutral-800 bg-neutral-950 p-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-hairline border-l-[3px] border-l-accent bg-[#FBFCFE] p-3.5">
       <div className="min-w-0 flex-1">
-        <p className="text-sm">
+        <p className="text-[13.5px] font-semibold text-ink">
           {q.question}
-          {isRequiredField(q.field) && (
-            <span className="ml-2 rounded-full border border-blue-500/50 bg-blue-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-blue-300 align-middle">
-              needed for ranking
-            </span>
-          )}
+          {isRequiredField(q.field) && <RequiredTag />}
         </p>
-        <p className="text-xs text-neutral-500">{q.whyAsking}</p>
+        <p className="mt-0.5 font-mono text-[11px] text-good">{q.whyAsking}</p>
       </div>
       {q.answerType === "boolean" ? (
         <div className="flex gap-2">
           <button
             disabled={disabled}
             onClick={() => onAnswer(q.field, true)}
-            className="rounded-md border border-green-500/50 px-3 py-1 text-sm text-green-400 hover:bg-green-500/10 disabled:opacity-40"
+            className="rounded-xl bg-soft px-3.5 py-1.5 font-mono text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-40"
           >
             Yes
           </button>
           <button
             disabled={disabled}
             onClick={() => onAnswer(q.field, false)}
-            className="rounded-md border border-neutral-700 px-3 py-1 text-sm text-neutral-300 hover:bg-neutral-800 disabled:opacity-40"
+            className="rounded-xl bg-soft px-3.5 py-1.5 font-mono text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-40"
           >
             No
           </button>
@@ -172,7 +180,7 @@ function QuestionCard({
               key={c}
               disabled={disabled}
               onClick={() => onAnswer(q.field, c)}
-              className="rounded-md border border-neutral-700 px-3 py-1 text-sm hover:bg-neutral-800 disabled:opacity-40"
+              className="rounded-xl bg-soft px-3.5 py-1.5 font-mono text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-40"
             >
               {c}
             </button>
@@ -190,11 +198,11 @@ function QuestionCard({
             value={val}
             onChange={(e) => setVal(e.target.value)}
             type={q.answerType === "number" ? "number" : "text"}
-            className="w-32 rounded-md border border-neutral-700 bg-neutral-900 px-2 py-1 text-sm focus:border-neutral-500 focus:outline-none"
+            className="w-32 rounded-xl border border-hairline bg-card px-2.5 py-1.5 font-mono text-[12.5px] text-ink placeholder:text-faint focus:border-brand focus:outline-none"
           />
           <button
             disabled={disabled || !val.trim()}
-            className="rounded-md border border-neutral-700 px-3 py-1 text-sm hover:bg-neutral-800 disabled:opacity-40"
+            className="rounded-xl bg-soft px-3.5 py-1.5 font-mono text-[12.5px] font-semibold text-brand transition-colors hover:bg-brand hover:text-white disabled:opacity-40"
           >
             Answer
           </button>

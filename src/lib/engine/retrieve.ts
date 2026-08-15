@@ -5,6 +5,7 @@
 // ============================================================
 
 import { getDb, rowToOpportunity } from "../db";
+import { localIsoDate } from "./dates";
 import type { CompanyProfile, Opportunity } from "../types";
 
 const DEFAULT_LIMIT = 120;
@@ -208,4 +209,35 @@ export function countBySource(): Record<string, number> {
     .prepare(`SELECT source, COUNT(*) AS n FROM opportunities GROUP BY source`)
     .all() as { source: string; n: number }[];
   return Object.fromEntries(rows.map((r) => [r.source, r.n]));
+}
+
+/**
+ * Programs a founder could actually apply to right now.
+ *
+ * NOT the same as `countBySource()` totals, and the difference is not
+ * cosmetic — summing those calls 4,596 rows "live" when most of them are not:
+ *
+ *   - `assistance_listing` rows are CATALOGUE entries. They describe a federal
+ *     program that exists; they are not an open solicitation with a deadline,
+ *     and they carry status "open" permanently. Counting them as live is the
+ *     single biggest source of the overcount (2,864 of 4,596).
+ *   - `forecasted` rows are announcements of an intent to publish. There is
+ *     nothing to apply to yet.
+ *   - Rows whose close date has passed are gone.
+ *
+ * A null close date still counts: rolling programs are genuinely open.
+ *
+ * `today` is injectable so callers on a page can pass the same date they
+ * render with, rather than this drifting against them.
+ */
+export function countLiveOpportunities(today: string = localIsoDate()): number {
+  const row = getDb()
+    .prepare(
+      `SELECT COUNT(*) AS n FROM opportunities
+       WHERE source != 'assistance_listing'
+         AND status IN ('posted', 'open')
+         AND (close_date IS NULL OR close_date >= ?)`,
+    )
+    .get(today) as { n: number };
+  return row.n;
 }

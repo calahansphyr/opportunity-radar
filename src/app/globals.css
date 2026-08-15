@@ -1,26 +1,715 @@
 @import "tailwindcss";
+@import "./styles/catalyst-kit.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ============================================================================
+   Opportunity Radar — app layer.
 
+   The design system itself is VENDORED in styles/catalyst-kit.css (Federal
+   Catalyst UI Kit). This file does three things and nothing else:
+
+     1. Bridges the kit's tokens into Tailwind utility names (@theme below), so
+        `bg-card` / `text-ink` / `border-hairline` resolve to kit values.
+     2. Sets page-level defaults (body, headings, focus, scrollbars).
+     3. Holds the app's own motion primitives — shimmer, radar scope, card
+        materialize, agent spotlight — which the kit has no equivalent for.
+
+   Never invent a color here. If you need one, it exists in catalyst-kit.css.
+   ============================================================================ */
+
+/* ----------------------------------------------------------------------------
+   Tailwind bridge. Values are literal because two names (`surface`,
+   `surface-variant`) collide with kit token names, and a var() indirection
+   would make those self-referential. Each line records the kit token it came
+   from — RE-SYNC THIS BLOCK if catalyst-kit.css is ever regenerated.
+   ---------------------------------------------------------------------------- */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* surfaces */
+  --color-bg: #f7f9fb; /* kit --color-background */
+  --color-card: #ffffff; /* kit --color-surface-container-lowest */
+  --color-surface-low: #f2f4f6; /* kit --color-surface-container-low */
+  --color-surface: #eceef0; /* kit --color-surface-container */
+  --color-surface-high: #e6e8ea; /* kit --color-surface-container-high */
+  --color-surface-variant: #e0e3e5; /* kit --color-surface-variant */
+  /* lines */
+  --color-hairline: rgba(3, 105, 161, 0.12); /* kit --color-border-ice */
+  --color-line: #c0c7d1; /* kit --color-outline-variant */
+  /* text */
+  --color-ink: #0f172a; /* kit --color-text-deep */
+  --color-muted: #40474f; /* kit --color-on-surface-variant */
+  --color-faint: #707881; /* kit --color-outline */
+  /* brand — one blue, the kit's cool federal primary */
+  --color-brand: #00507d; /* kit --color-primary */
+  --color-brand-strong: #004b74; /* kit --color-on-primary-fixed-variant */
+  --color-accent: #006399; /* kit --color-surface-tint */
+  --color-soft: #cde5ff; /* kit --color-primary-fixed */
+  --color-brand-fixed: #94ccff; /* kit --color-primary-fixed-dim */
+  /* status — these mean status and nothing else */
+  --color-good: #006c4a; /* kit --color-fit-strong */
+  --color-good-soft: rgba(0, 108, 74, 0.1); /* kit --color-fit-strong-surface */
+  --color-warn: #92400e; /* kit --color-caution-text */
+  --color-warn-soft: #fef3c7; /* kit --color-caution-surface */
+  --color-risk: #ba1a1a; /* kit --color-error */
+  --color-risk-soft: #ffdad6; /* kit --color-error-container */
+  /* funding twin — the kit's cyan secondary */
+  --color-twin: #006686; /* kit --color-secondary */
+  --color-twin-soft: #c0e8ff; /* kit --color-secondary-fixed */
+  /* elevation — `shadow-card` predates the kit and is still used by
+     interview-panel / meter-panel / status-strip. Bound to the kit's own card
+     shadow so there is one elevation language, not two. */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  /* type — same three families the kit names */
+  --font-display: var(--font-hanken);
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jbmono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: var(--color-hairline);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-on-surface);
+  font-family: var(--font-body);
+  font-size: 15px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-headline);
+  letter-spacing: -0.015em;
+  text-wrap: balance;
+}
+
+/* THE card — the kit's `.or-card` without its padding, since pages set their
+   own. Keep these two in lockstep; do not retune one alone. */
+.card {
+  position: relative;
+  background: var(--surface-card);
+  border: 1px solid var(--color-border-ice);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Numbers read as ledger entries — tabular everywhere they appear. */
+.font-mono,
+code,
+pre {
+  font-variant-numeric: tabular-nums;
+}
+.tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+::selection {
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-surface-tint);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+*::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.18);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgba(15, 23, 42, 0.34);
+  background-clip: content-box;
+}
+
+/* Thinking shimmer for skeletons / working states. */
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: shimmer 1.8s infinite;
+}
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Radar scope sweep + blip pop-in. Both sit still under reduced motion. */
+@keyframes scope-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes blip-in {
+  from {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.scope-sweep {
+  animation: scope-sweep 3.6s linear infinite;
+  transform-origin: center;
+}
+.scope-blip {
+  animation: blip-in 0.5s ease-out backwards;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Match cards materialize onto the canvas as scoring batches land. */
+@keyframes card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.card-in {
+  animation: card-in 0.45s ease-out backwards;
+}
+
+/* The agent's pointing power: a blue attention ring that decays. */
+@keyframes card-spotlight {
+  0% {
+    box-shadow:
+      0 0 0 2px var(--color-surface-tint),
+      0 0 28px rgba(0, 99, 153, 0.3);
+  }
+  100% {
+    box-shadow:
+      0 0 0 2px rgba(0, 99, 153, 0),
+      0 0 0 rgba(0, 99, 153, 0);
+  }
+}
+.card-spotlight {
+  animation: card-spotlight 3.2s ease-out forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+/* ============================================================================
+   App shell + Dashboard layer.
+
+   Measurements are taken from design/claude-design/kit-source/
+   screen-opportunity-map.jsx (the canonical anatomy) and from the approved
+   mockup public/design-mocks/frontend-pages.html, where these rules were
+   prototyped under an `mk-` prefix.
+
+   Everything here is PAGE-level: grid, chrome, disclosure behaviour, controls
+   the kit has no equivalent for. The two generic card patterns the mock also
+   invented (.or-card__head, .or-meter) graduated into catalyst-kit.css
+   instead, per kit rule 6. The `app-` prefix is deliberate: `.or-*` names
+   belong to the kit alone, so a stray product class can never be mistaken for
+   a vendored one.
+
+   Never invent a color here. Every value below is a kit token.
+   ============================================================================ */
+
+/* --- Chrome ---------------------------------------------------------------
+   The kit's .or-nav is position:relative and assumes the demo shell's
+   flex-column + inner scroller. In a normal document flow the bar has to
+   stick itself. The drawer is fixed under it, so the two heights must agree
+   (--layout-nav-height, 80px). */
+.or-nav {
+  position: sticky;
+  top: 0;
+  gap: 16px;
+}
+/* .or-nav pads 64px a side and never shrinks its link row, so below ~1500px
+   the right-hand group (icons + CTA) was pushed past the viewport edge and
+   clipped. Let the brand/links group give way; keep the actions intact. */
+.or-nav > :first-child {
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.or-nav > :first-child::-webkit-scrollbar {
+  display: none;
+}
+.or-nav > :last-child {
+  flex: none;
+}
+.or-nav__brand,
+.or-nav__link {
+  white-space: nowrap;
+}
+.or-nav__links {
+  flex-wrap: nowrap;
+}
+
+/* --- Page frame -----------------------------------------------------------
+   screen-opportunity-map.jsx line 78: centred 1440, 48px block padding on the
+   64px desktop margin. NO side nav — SideNavBar belongs to the workspace. */
+.app-page {
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  padding: 48px var(--space-margin-desktop);
+}
+@media (max-width: 1200px) {
+  .or-nav {
+    padding: 0 var(--space-md);
+  }
+  .app-page {
+    padding-left: var(--space-md);
+    padding-right: var(--space-md);
+  }
+}
+
+/* Page header ABOVE the grid, so all three columns start level. With the
+   heading inside the centre column its first card sat ~48px below the rails. */
+.app-pagehead {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border-ice);
+}
+
+/* 3 / 6 / 3, collapsing to one column before the rails get too narrow to
+   hold a KeyValueRow. */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-gutter);
+  align-items: start;
+}
+.app-c3 {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gutter);
+  min-width: 0;
+}
+.app-c6 {
+  grid-column: span 6;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-gutter);
+  min-width: 0;
+}
+/* Stacked, the matches come FIRST. Source order is dossier / matches / ask
+   because that is the desktop reading order left-to-right, but a phone that
+   opens on an avatar, four fact rows, a meter and a task list before showing
+   a single match has buried the product. `order` moves the matches up without
+   disturbing the desktop grid or the tab order's logic. */
+@media (max-width: 1280px) {
+  .app-grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .app-c3,
+  .app-c6 {
+    grid-column: 1 / -1;
+  }
+  .app-grid > .app-c6 {
+    order: -1;
+  }
+}
+
+/* --- Match disclosure list ------------------------------------------------
+   Paragraphs are hidden by default and expand on click (team decision,
+   2026-08-15). Several cards may be open at once — founders compare, so a
+   one-at-a-time accordion would fight the task.
+
+   The toggle is a full-bleed transparent button stretched over the header
+   band rather than a <button> wrapping it: the band contains an <h4>, which
+   is flow content and not legal inside a button. This keeps the whole band
+   clickable, keeps the heading a real heading, and keeps aria-expanded on a
+   native button. */
+.app-opp__head {
+  position: relative;
+}
+.app-opp__toggle {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  border: 0;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.app-opp__chev {
+  transition: transform var(--duration-base) var(--ease-standard);
+  flex: none;
+  color: var(--color-outline);
+}
+.or-opp[data-expanded="false"] .app-opp__chev {
+  transform: rotate(-90deg);
+}
+.or-opp[data-expanded="false"] .or-opp__body,
+.or-opp[data-expanded="false"] .or-opp__foot,
+.or-opp[data-expanded="false"] .or-opp__lede {
+  display: none;
+}
+.or-opp[data-expanded="false"] .or-opp__head {
+  border-bottom: 0;
+}
+.app-opp__head:has(.app-opp__toggle:hover) .or-opp__title {
+  color: var(--color-primary);
+}
+.app-opp__toggle:focus-visible {
+  outline: 2px solid var(--color-surface-tint);
+  outline-offset: -2px;
+  border-radius: var(--radius-lg);
+}
+/* The brief names FOUR explanation elements; the kit card's body is a fixed
+   2-col grid. auto-fit degrades 3 → 2 → 1 as the centre column narrows. */
+.app-opp__body {
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+/* --- Difficulty bars -------------------------------------------------------
+   Signal-strength bars for the 1-3 effort estimate on a match card. Brand
+   blue, never red: rule 2 keeps red for deadlines, alerts and failures, and a
+   hard grant is none of those. See dashboard/difficulty.ts for the weighting. */
+.app-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.app-bars > span {
+  width: 3px;
+  border-radius: 1px;
+  background: var(--color-outline-variant);
+}
+.app-bars > span:nth-child(1) {
+  height: 40%;
+}
+.app-bars > span:nth-child(2) {
+  height: 70%;
+}
+.app-bars > span:nth-child(3) {
+  height: 100%;
+}
+.app-bars > span[data-on="true"] {
+  background: var(--color-primary);
+}
+
+/* --- Task rows ------------------------------------------------------------
+   ONE completion control. A square checkbox everywhere; "current" is
+   expressed by the row (spine + tint), never by a different control shape.
+   The kit ships .or-task__radio for current and a cyan check glyph for done —
+   three shapes for one idea. */
+.app-check {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  margin-top: 2px;
+  border: 2px solid var(--color-outline-variant);
+  border-radius: var(--radius-default);
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  color: transparent;
+}
+.app-check:hover {
+  border-color: var(--color-primary);
+}
+.or-task--current .app-check {
+  border-color: var(--color-primary);
+}
+.app-check[aria-checked="true"] {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: var(--color-on-primary);
+}
+/* Due dates form a column on the right rather than floating to the text. */
+.or-task {
+  align-items: flex-start;
+}
+.or-task__due {
+  min-width: 62px;
+  text-align: right;
+}
+.or-task:last-child {
+  border-bottom: 0;
+}
+
+/* Completed work collapses into a counted group — it should not accumulate
+   forever in the active list. */
+.app-donehead {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: 0;
+  border-top: 1px solid var(--color-border-ice);
+  cursor: pointer;
+  font-family: var(--font-label);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-line);
+  letter-spacing: var(--text-label-sm-tracking);
+  font-weight: var(--text-label-sm-weight);
+  text-transform: uppercase;
+  color: var(--color-outline);
+}
+.app-donehead:hover {
+  color: var(--color-text-deep);
+}
+.app-donehead .app-opp__chev {
+  margin-left: auto;
+}
+.app-donehead[aria-expanded="false"] .app-opp__chev {
+  transform: rotate(-90deg);
+}
+
+/* --- Dossier ---------------------------------------------------------------
+   An unknown fact row pulses red to say it is blocking money, which reads as
+   an invitation to click. These make that true: the row becomes a button that
+   scrolls to the card asking the question. Bare button, so the KeyValueRow
+   inside keeps the kit's exact appearance. */
+.app-kv-button {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+  border-radius: var(--radius-default);
+}
+.app-kv-button:hover .or-kv__value {
+  text-decoration: underline;
+}
+
+/* "Sample report" marker. This says plainly that the dossier is demo data and
+   offers the way to replace it, rather than letting a reader assume the whole
+   product is mocked. Tertiary wash, so it reads as a note and not a status. */
+.app-sample {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 20px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-tertiary-fixed);
+  color: var(--color-on-tertiary-fixed-variant);
+  text-decoration: none;
+  font-family: var(--font-label);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-line);
+  letter-spacing: var(--text-label-sm-tracking);
+  font-weight: var(--text-label-sm-weight);
+}
+.app-sample:hover {
+  background: var(--color-tertiary-fixed-dim);
+}
+
+/* --- The ask card ---------------------------------------------------------
+   The one card on the page that ASKS something of you rather than reporting.
+   Tinted with the kit's own tertiary wash so it separates without spending a
+   new colour — rule 1 keeps one blue, rule 2 keeps the status hues for
+   status. Labels take the tertiary ink so the card reads as one object and
+   the small type gains contrast (7.23:1, vs 4.59:1 on the default). */
+.app-ask {
+  background: var(--color-tertiary-fixed);
+  border-color: var(--color-tertiary-fixed-dim);
+}
+.app-ask .or-kv__label,
+.app-ask .app-label {
+  color: var(--color-on-tertiary-fixed-variant);
+}
+.app-ask .or-option {
+  background: var(--color-surface-container-lowest);
+}
+.app-ask .or-option--checked {
+  border-color: var(--color-tertiary);
+}
+
+/* --- List-header popovers -------------------------------------------------
+   Filter and sort collapse to glyphs and open their options on demand. */
+.app-pop {
+  position: relative;
+}
+.app-pop__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  min-width: 232px;
+  padding: 8px;
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-border-ice);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+.app-pop__title {
+  margin: 4px 8px 8px;
+  font-family: var(--font-label);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-line);
+  letter-spacing: var(--text-label-sm-tracking);
+  font-weight: var(--text-label-sm-weight);
+  text-transform: uppercase;
+  color: var(--color-outline);
+}
+.app-pop__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: var(--radius-default);
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-deep);
+}
+.app-pop__row:hover {
+  background: var(--color-surface-container-low);
+}
+.app-pop__row input {
+  accent-color: var(--color-primary);
+}
+.app-pop__row > span:first-of-type {
+  flex: 1;
+}
+
+/* --- Assistant drawer -----------------------------------------------------
+   screen-assistant-drawer.jsx line 15, with one change: the kit screen
+   reserves 420px of main padding while the drawer is open, which squeezes the
+   grid and reflows the whole page on every toggle. Floating it over the
+   content keeps the layout still. It slides in from the edge so it reads as a
+   panel arriving OVER the rail, not the rail being replaced. */
+.app-drawer {
+  position: fixed;
+  right: 0;
+  top: var(--layout-nav-height);
+  bottom: 0;
+  width: var(--layout-rail-width);
+  max-width: 100vw;
+  z-index: 50;
+  background: var(--color-surface-container-lowest);
+  border-left: 1px solid var(--color-border-ice);
+  box-shadow: var(--shadow-drawer);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--duration-drawer) var(--ease-standard);
+}
+.app-drawer[data-open="false"] {
+  transform: translateX(100%);
+}
+.app-drawer[data-open="true"] {
+  transform: translateX(0);
+}
+.app-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 60;
+}
+.app-drawer__suggestion {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 8px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  border-radius: var(--radius-default);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+  color: var(--color-text-deep);
+}
+.app-drawer__suggestion:hover {
+  background: var(--color-surface-container-low);
+}
+.app-drawer__reply {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 85%;
+  background: var(--color-surface-container);
+  border: 1px solid var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  border-radius: var(--radius-lg);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+.app-drawer__sent {
+  align-self: flex-end;
+  max-width: 85%;
+  background: var(--color-primary-fixed);
+  color: var(--color-on-primary-fixed);
+  border-radius: var(--radius-lg);
+  padding: 8px 12px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm-size);
+  line-height: var(--text-body-sm-line);
+}
+
+/* --- Small shared type ----------------------------------------------------- */
+.app-label {
+  font-family: var(--font-label);
+  font-size: var(--text-label-sm-size);
+  line-height: var(--text-label-sm-line);
+  letter-spacing: var(--text-label-sm-tracking);
+  font-weight: var(--text-label-sm-weight);
+  color: var(--color-outline);
+}
+.app-num {
+  font-family: var(--font-label);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--color-text-deep);
+}
+.app-h3 {
+  margin: 0;
+  font-family: var(--font-headline);
+  font-size: var(--text-headline-md-size);
+  line-height: var(--text-headline-md-line);
+  font-weight: 600;
+  color: var(--color-text-deep);
+}
+.app-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
 }

@@ -1,15 +1,17 @@
 "use client";
 
 // Opportunity Map — the stateful orchestrator. Owns the SSE stream + profile
-// state and composes the page structure; all visual regions live in
+// state and composes the mission-control page; all visual regions live in
 // ./components/* so the styling pass can go file-by-file.
 //
-// Page structure (stable for the restyle):
-//   #intake                    — description box + analyze + sample chips
-//   #workspace                 — two-column grid below lg, stacked on mobile
-//     #results  (main column)  — activity feed, skeleton/partial note,
-//                                #report or honest-no, save-&-monitor
-//     #guidance (right rail)   — #meter, #interview, voice panel (sticky)
+// Page structure (mission control):
+//   #intake                — description box, analyze, sample chips
+//   #workspace             — two-column grid on lg, stacked on mobile
+//     #canvas  (main)      — skeleton/report/honest-no, save-&-monitor;
+//                            cards materialize + take the agent's spotlight
+//     #agent-rail (right)  — AgentDock: ONE agent presence (scope, status,
+//                            narration w/ pointing power) + meter/interview/
+//                            voice as its instruments
 
 import { useEffect, useRef, useState } from "react";
 import type { CompanyProfile, GateField } from "@/lib/types";
@@ -17,11 +19,12 @@ import { profileReadiness, readinessAsks } from "@/lib/engine/readiness";
 import VoicePanel from "./voice-panel";
 import SaveMonitor from "./save-monitor";
 import IntakePanel from "./components/intake-panel";
-import ActivityFeed from "./components/activity-feed";
-import MeterPanel from "./components/meter-panel";
-import InterviewPanel from "./components/interview-panel";
+import AgentDock from "./components/agent-dock";
+import ProfileCard from "./components/profile-card";
+import ActionPlan from "./components/action-plan";
+import UnlockPanel from "./components/unlock-panel";
 import { HonestNoPanel, HowItWorks, ReportSkeleton, ReportView } from "./components/report-view";
-import type { QuickReply, UiReport } from "./components/shared";
+import type { QuickReply, Spotlight, UiReport } from "./components/shared";
 import type { EligibilityMeter, InterviewQuestion } from "@/lib/types";
 
 type Ev =
@@ -41,8 +44,12 @@ export default function OpportunityMap() {
   const [error, setError] = useState<string | null>(null);
   const [quickReplies, setQuickReplies] = useState<QuickReply[]>([]);
   const [restored, setRestored] = useState(false);
+  const [spotlight, setSpotlight] = useState<Spotlight | null>(null);
+  // Render mirror of profileRef so the dossier re-paints as facts land.
+  const [profileView, setProfileView] = useState<CompanyProfile | null>(null);
   const profileRef = useRef<CompanyProfile | null>(null);
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const prevBusy = useRef(false);
 
   // Restore the most recently saved profile so a refresh doesn't lose
   // interview answers. Best-effort; failures leave a blank slate.
@@ -55,11 +62,25 @@ export default function OpportunityMap() {
         >((a, b) => (!a || b.updatedAt > a.updatedAt ? b : a), null);
         if (latest?.profile && !profileRef.current) {
           profileRef.current = latest.profile;
-          setText((t) => t || latest.profile.description || "");
+          setProfileView(latest.profile);
+          // show only the founder's own words — interview follow-ups live in
+          // the profile card, not the textarea
+          const desc = (latest.profile.description ?? "").split("\nFounder follow-up:")[0].trim();
+          setText((t) => t || desc);
           setRestored(true);
         }
       })
       .catch(() => {});
+    // Restore the last finished report so nav round-trips don't lose the scan.
+    try {
+      const raw = sessionStorage.getItem("or:lastReport");
+      if (raw) {
+        const r = JSON.parse(raw) as UiReport;
+        setReport(r);
+        setMeter(r.meter);
+        setQuestions(r.questions);
+      }
+    } catch {}
   }, []);
 
   /** Debounced autosave to the companies API (durable across refreshes). */
@@ -81,6 +102,7 @@ export default function OpportunityMap() {
         break;
       case "profile":
         profileRef.current = ev.profile;
+        setProfileView(ev.profile);
         persist(ev.profile);
         break;
       case "questions":
@@ -92,13 +114,33 @@ export default function OpportunityMap() {
         setQuestions(ev.report.questions);
         setMeter(ev.report.meter);
         profileRef.current = ev.report.profile;
+        setProfileView(ev.report.profile);
         persist(ev.report.profile);
+        // a scan is expensive — survive navigation (issue: report evaporated)
+        try {
+          sessionStorage.setItem("or:lastReport", JSON.stringify(ev.report));
+        } catch {}
         break;
       case "error":
         setError(ev.message);
         break;
     }
   }
+
+  /** The agent's pointing power: spotlight a card on the canvas. */
+  const focusMatch = (opportunityId: string) => {
+    setSpotlight({ id: opportunityId, nonce: Date.now() });
+  };
+
+  // When a run completes with matches, the agent presents its top pick:
+  // spotlight + scroll the strongest card the founder can actually see.
+  useEffect(() => {
+    if (prevBusy.current && !busy && report && !report.honestNo) {
+      const top = report.matches.find((m) => m.score >= 50);
+      if (top) setSpotlight({ id: top.opportunityId, nonce: Date.now() });
+    }
+    prevBusy.current = busy;
+  }, [busy, report]);
 
   async function stream(url: string, body: unknown) {
     setBusy(true);
@@ -136,12 +178,16 @@ export default function OpportunityMap() {
     setReport(null);
     setMeter(null);
     setQuestions([]);
+    setSpotlight(null);
     // Carry durable interview answers (gate fields) into re-analysis — but
     // ONLY when the box still builds on this profile's own description
     // (appended follow-ups). A rewritten description is a different company;
     // carrying the old answers leaks stale employees/revenue into the run.
     let p = profileRef.current;
-    if (p && !(p.description && text.trim().startsWith(p.description.trim().slice(0, 80)))) {
+    // compare against the founder's own words (pre-follow-up) — the textarea
+    // never shows appended interview answers anymore
+    const ownWords = p?.description?.split("\nFounder follow-up:")[0].trim() ?? "";
+    if (p && !(ownWords && text.trim().startsWith(ownWords.slice(0, 80)))) {
       p = null;
       profileRef.current = null;
       setRestored(false);
@@ -217,64 +263,71 @@ export default function OpportunityMap() {
     : questions;
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
-      <IntakePanel
-        text={text}
-        busy={busy}
-        restored={restored}
-        onText={setText}
-        onAnalyze={analyze}
-      />
-
+    <main className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-10">
       {error && (
         <div
           id="error"
-          className="rounded-lg border border-red-500/50 bg-red-500/10 p-3 text-sm text-red-400"
+          className="mb-4 rounded-xl border border-[#F2C4BC] bg-risk-soft p-3 text-[13px] text-risk"
         >
           {error}
         </div>
       )}
 
-      {!started && <HowItWorks />}
-
-      {/* Workspace: results (main) + guidance rail. Rail sticks on desktop and
-          stacks above the report on mobile so questions stay reachable. */}
-      <div id="workspace" className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <aside id="guidance" className="min-w-0 space-y-4 lg:order-2 lg:sticky lg:top-20">
-          {/* Voice mode (renders nothing unless GEMINI_API_KEY is set) */}
-          <VoicePanel
-            getProfile={() => profileRef.current}
-            getReport={() => report}
-            onEngineEvent={handle}
-          />
-          {meter && (
-            <MeterPanel
-              meter={meter}
-              preliminary={report != null && report.matches.length === 0}
-            />
-          )}
-          <InterviewPanel
-            questions={interviewQuestions}
-            quickReplies={quickReplies}
+      {/* Federal Catalyst 12-col map: dossier+plan | intake+matches | unlock+agent.
+          DOM order puts the center first so mobile stacks intake → rail → dossier. */}
+      <div id="workspace" className="grid grid-cols-1 items-start gap-6 lg:grid-cols-12">
+        <div id="canvas" className="min-w-0 space-y-4 lg:order-2 lg:col-span-6">
+          <IntakePanel
+            text={text}
             busy={busy}
-            askCapitalNeed={asks?.needsCapitalNeed ?? false}
-            onAnswer={answer}
-            onSend={sendMessage}
+            restored={restored}
+            onText={setText}
+            onAnalyze={analyze}
           />
-        </aside>
-
-        <div id="results" className="min-w-0 space-y-4 lg:order-1">
-          <ActivityFeed lines={activity} busy={busy} />
+          {!started && !profileView && <HowItWorks />}
           {report && busy && (
-            <p className="animate-pulse text-xs text-neutral-500">
-              Scoring in progress — matches below update live…
+            <p className="animate-pulse font-mono text-[11px] text-faint">
+              Matches below update live as scoring finishes…
             </p>
           )}
           {busy && !report && <ReportSkeleton />}
           {report &&
-            (report.honestNo ? <HonestNoPanel report={report} /> : <ReportView report={report} />)}
+            (report.honestNo ? (
+              <HonestNoPanel report={report} spotlight={spotlight} />
+            ) : (
+              <ReportView report={report} spotlight={spotlight} busy={busy} />
+            ))}
           {report && !busy && <SaveMonitor profile={report.profile} />}
         </div>
+
+        <div className="min-w-0 space-y-6 lg:order-1 lg:col-span-3">
+          <ProfileCard profile={profileView} />
+          <ActionPlan report={report} />
+        </div>
+
+        <aside
+          id="agent-rail"
+          className="min-w-0 space-y-6 lg:sticky lg:top-20 lg:order-3 lg:col-span-3 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto"
+        >
+          <UnlockPanel
+            meter={meter}
+            questions={interviewQuestions}
+            quickReplies={quickReplies}
+            busy={busy}
+            askCapitalNeed={asks?.needsCapitalNeed ?? false}
+            preliminary={report != null && report.matches.length === 0}
+            onAnswer={answer}
+            onSend={sendMessage}
+          />
+          <AgentDock lines={activity} busy={busy} report={report} onFocusMatch={focusMatch}>
+            {/* Voice mode (renders nothing unless GEMINI_API_KEY is set) */}
+            <VoicePanel
+              getProfile={() => profileRef.current}
+              getReport={() => report}
+              onEngineEvent={handle}
+            />
+          </AgentDock>
+        </aside>
       </div>
     </main>
   );

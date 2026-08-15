@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>feat/frontend-pages — UX designs</title>
+
+<!-- Real design system, copied beside this file. Re-sync after kit changes:
+       cp src/app/styles/catalyst-kit.css public/design-mocks/catalyst-kit.css -->
+<link rel="stylesheet" href="catalyst-kit.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" />
+
+<style>
+  /* Fonts bound to kit roles (app does this via next/font). Below: nothing but
+     the shell measurements taken from screen-opportunity-map.jsx. */
+  :root {
+    --font-display: "Hanken Grotesk", system-ui, sans-serif;
+    --font-headline: "Hanken Grotesk", system-ui, sans-serif;
+    --font-body: "Inter", system-ui, sans-serif;
+    --font-label: "JetBrains Mono", ui-monospace, monospace;
+    --font-mono: "JetBrains Mono", ui-monospace, monospace;
+    --mk-banner-h: 34px;
+  }
+  /* The kit assumes a border-box reset but does not ship one — it sets
+     box-sizing on only five rules. In the app Tailwind's preflight supplies
+     it; a standalone consumer gets content-box, and .or-nav (width:100% PLUS
+     64px of side padding) then computes to viewport + 128px and clips its
+     right-hand group. Anything loading catalyst-kit.css without preflight
+     needs this line. */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--color-background); color: var(--color-on-surface);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .mk-banner {
+    background: var(--color-inverse-surface); color: var(--color-inverse-on-surface);
+    font-family: var(--font-label); font-size: 12px; height: var(--mk-banner-h);
+    padding: 0 24px; display: flex; gap: 16px; align-items: center; flex: none;
+    overflow: hidden; white-space: nowrap;
+  }
+  .mk-banner b { color: #fff; }
+
+  /* Opportunity Map chrome — screen-opportunity-map.jsx line 78:
+     top nav, centered 1440 main, paddingRight 420 when the drawer is open.
+     NO side nav: that belongs to Pursuit Workspace alone. */
+  .mk-scroll { flex: 1; overflow-y: auto; }
+  main.mk-page {
+    max-width: 1440px; margin: 0 auto;
+    padding: 48px var(--space-margin-desktop);
+  }
+  /* The drawer OVERLAYS. The kit screen reserves 420px of padding when it is
+     open, which squeezes the whole grid and reflows the page every time you
+     toggle it. Floating it over the content keeps the layout still. */
+
+  .mk-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; align-items: start; }
+  .mk-c3 { grid-column: span 3; display: flex; flex-direction: column; gap: 24px; }
+  .mk-c6 { grid-column: span 6; display: flex; flex-direction: column; gap: 24px; }
+  @media (max-width: 1280px) { .mk-c3, .mk-c6 { grid-column: 1 / -1; } }
+
+  /* AssistantDrawer — screen-assistant-drawer.jsx line 15 verbatim. */
+  .mk-drawer {
+    position: fixed; right: 0; top: calc(var(--mk-banner-h) + 80px); bottom: 0;
+    width: 384px; z-index: 50;
+    background: var(--color-surface-container-lowest);
+    border-left: 1px solid var(--color-border-ice);
+    box-shadow: var(--shadow-drawer);
+    display: flex; flex-direction: column;
+    /* Slides in from the edge so it is legible as a panel arriving OVER the
+       rail, not the rail being replaced. */
+    transition: transform 260ms var(--ease-emphasized, cubic-bezier(.2,0,0,1));
+  }
+  .mk-drawer[data-open="false"] { transform: translateX(100%); }
+  .mk-drawer[data-open="true"] { transform: translateX(0); }
+  @media (prefers-reduced-motion: reduce) { .mk-drawer { transition: none; } }
+  .mk-fab { position: fixed; right: 24px; bottom: 24px; z-index: 60; }
+
+  /* Nav overflow guard. .or-nav pads 64px a side and never shrinks its link
+     row, so below ~1500px the right-hand group (icons + Apply Now) was being
+     pushed past the viewport edge and clipped. Let the brand/links group be
+     the thing that gives way; keep the actions group intact. */
+  .or-nav { gap: 16px; }
+  .mk-navleft { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .mk-navleft::-webkit-scrollbar { display: none; }
+  .or-nav__brand { white-space: nowrap; }
+  .or-nav__links { flex-wrap: nowrap; }
+  .or-nav__link { white-space: nowrap; }
+  .mk-navright { flex: none; }
+  @media (max-width: 1200px) {
+    .or-nav { padding: 0 var(--space-md); }
+    main.mk-page { padding-left: var(--space-md); padding-right: var(--space-md); }
+  }
+
+  /* Page header above the grid, so all three columns start level.
+     Previously the heading lived inside the centre column, which pushed its
+     first card ~48px below the side rails. */
+  .mk-pagehead {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 16px; flex-wrap: wrap; margin-bottom: 24px;
+    padding-bottom: 16px; border-bottom: 1px solid var(--color-border-ice);
+  }
+
+  /* Completeness meter — sits at the FOOT of the dossier card, under a rule,
+     with its number stated. The kit's `or-progress--top` hairline reads as
+     card trim rather than data. */
+  .mk-meter { width: 100%; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border-ice); }
+  .mk-meter__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+  .mk-meter__value { font: 700 24px/28px var(--font-headline); color: var(--color-primary); }
+  .mk-meter__track { height: 8px; border-radius: 9999px; background: var(--color-surface-container); overflow: hidden; }
+  .mk-meter__fill { height: 100%; border-radius: 9999px; background: var(--color-primary); }
+  .mk-meter__note { margin: 8px 0 0; font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant); text-align: left; }
+
+  /* Stacked proportional bar — for three numbers that are parts of one whole
+     (money held: settleable / unparseable / blocked). */
+  .mk-stackbar { display: flex; height: 10px; border-radius: 9999px; overflow: hidden; gap: 2px; background: var(--color-surface-container); }
+  .mk-stackbar > span { height: 100%; }
+  .mk-legend { display: flex; flex-direction: column; gap: 10px; margin-top: 14px; width: 100%; }
+  .mk-legend__row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .mk-legend__key { display: flex; align-items: center; gap: 8px; font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant); }
+  .mk-legend__dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
+
+  /* One card-header band for every rail card, so Action Plan and Deadlines
+     read as siblings. Kit gap: it has no card-header component — this should
+     graduate into catalyst-kit.css as .or-card__head. */
+  .mk-cardhead {
+    display: flex; justify-content: space-between; align-items: center; gap: 12px;
+    padding: 16px; border-bottom: 1px solid var(--color-border-ice);
+    font: 600 16px/24px var(--font-headline); color: var(--color-text-deep);
+  }
+  .mk-cardbody { padding: 16px; }
+  .or-task:last-child { border-bottom: 0; }
+
+  /* Disclosure list. Several cards may be open at once — founders compare,
+     so a true one-at-a-time accordion would fight the task. */
+  .mk-opp__toggle {
+    display: block; width: 100%; text-align: left; background: none; border: 0;
+    padding: 0; cursor: pointer; font: inherit; color: inherit;
+  }
+  .mk-opp__chev { transition: transform var(--duration-base) var(--ease-standard); flex: none; color: var(--color-outline); }
+  .or-opp[data-expanded="false"] .mk-opp__chev { transform: rotate(-90deg); }
+  .or-opp[data-expanded="false"] .or-opp__body,
+  .or-opp[data-expanded="false"] .or-opp__foot,
+  .or-opp[data-expanded="false"] .or-opp__lede { display: none; }
+  .or-opp[data-expanded="false"] .or-opp__head { border-bottom: 0; }
+  .mk-opp__toggle:hover .or-opp__title { color: var(--color-primary); }
+
+  /* ONE completion control. Square checkbox everywhere; "current" is
+     expressed by the row (spine + tint), never by a different control shape.
+     The kit ships a round or-task__radio for current and a cyan check icon
+     for done — three shapes for one idea. Should collapse in the kit too. */
+  .mk-check {
+    width: 20px; height: 20px; flex: none; margin-top: 2px;
+    border: 2px solid var(--color-outline-variant);
+    border-radius: var(--radius-default);
+    background: none; cursor: pointer; padding: 0;
+    display: grid; place-items: center; color: transparent;
+  }
+  .mk-check:hover { border-color: var(--color-primary); }
+  .or-task--current .mk-check { border-color: var(--color-primary); }
+  .mk-check[aria-checked="true"] {
+    background: var(--color-primary); border-color: var(--color-primary); color: var(--color-on-primary);
+  }
+  /* Due dates form a column on the right rather than floating to the text. */
+  .or-task__due { min-width: 62px; text-align: right; }
+  .or-task { align-items: flex-start; }
+
+  /* Completed work collapses into a counted group — it should not accumulate
+     forever in the active list. */
+  .mk-donehead {
+    display: flex; align-items: center; gap: 8px; width: 100%;
+    padding: 12px 16px; background: none; border: 0; cursor: pointer;
+    font: 500 12px/14px var(--font-label); letter-spacing: .05em;
+    text-transform: uppercase; color: var(--color-outline);
+    border-top: 1px solid var(--color-border-ice);
+  }
+  .mk-donehead:hover { color: var(--color-text-deep); }
+  .mk-donehead .mk-opp__chev { margin-left: auto; }
+
+  /* The one card on the page that ASKS something of you, rather than
+     reporting. Tinted with the kit's own primary-fixed wash (the same one
+     or-opp__head uses) so it separates without spending a new colour —
+     rule 1 keeps one blue, rule 2 keeps the status hues for status. */
+  .mk-ask {
+    background: var(--color-tertiary-fixed);
+    border-color: var(--color-tertiary-fixed-dim);
+  }
+  /* Labels inside pick up the tertiary ink so the card reads as one object
+     and the small type gains contrast (7.23:1 vs 4.59:1 on the default). */
+  .mk-ask .or-kv__label,
+  .mk-ask .mk-label { color: var(--color-on-tertiary-fixed-variant); }
+  .mk-ask .or-option { background: var(--color-surface-container-lowest); }
+  .mk-ask .or-option--checked { border-color: var(--color-tertiary); }
+
+  /* Icon-button popovers for filter and sort. Traditional list chrome:
+     the controls collapse to glyphs and open their options on demand. */
+  .mk-pop { position: relative; }
+  .mk-pop__menu {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 40;
+    min-width: 232px; padding: 8px;
+    background: var(--color-surface-container-lowest);
+    border: 1px solid var(--color-border-ice);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
+  }
+  .mk-pop__title {
+    margin: 4px 8px 8px; font: 500 12px/14px var(--font-label);
+    letter-spacing: .05em; text-transform: uppercase; color: var(--color-outline);
+  }
+  .mk-pop__row {
+    display: flex; align-items: center; gap: 10px; padding: 8px;
+    border-radius: var(--radius-default); cursor: pointer;
+    font: 400 14px/20px var(--font-body); color: var(--color-text-deep);
+  }
+  .mk-pop__row:hover { background: var(--color-surface-container-low); }
+  .mk-pop__row input { accent-color: var(--color-primary); }
+  .mk-pop__row span:nth-of-type(1) { flex: 1; }
+
+  .mk-h3 { margin: 0; font: 600 24px/32px var(--font-headline); color: var(--color-text-deep); }
+  .mk-h4 { margin: 0 0 24px; font: 600 20px/28px var(--font-headline); color: var(--color-text-deep); }
+  .mk-label { font: 500 12px/14px var(--font-label); letter-spacing: .05em; color: var(--color-outline); }
+  .mk-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .mk-between { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+  .mk-num { font-family: var(--font-label); font-variant-numeric: tabular-nums; font-weight: 600; color: var(--color-text-deep); }
+  .mk-stack { display: flex; flex-direction: column; gap: 12px; }
+  .mk-anno { font-family: var(--font-label); font-size: 11px; color: var(--color-on-surface-variant); background: var(--color-surface-container); border-radius: var(--radius-default); padding: 4px 8px; display: inline-block; }
+  .mk-vh { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body data-drawer="false">
+
+<div class="mk-banner">
+  <b>MOCKUP · feat/frontend-pages</b>
+  <span>Map chrome from screen-opportunity-map.jsx — no side nav, centered 1440, 3/6/3, fixed 384 drawer</span>
+  <span style="color:var(--color-outline-variant)">Grey chips = design note</span>
+</div>
+
+<!-- Plain .or-nav — the map's nav is solid; glass is workspace chrome. -->
+<nav class="or-nav">
+  <div class="mk-navleft" style="display:flex;align-items:center;gap:var(--space-lg)">
+    <h1 class="or-nav__brand">Federal Catalyst</h1>
+    <div class="or-nav__links" id="tabs" role="tablist" aria-label="Screens">
+      <button type="button" role="tab" aria-selected="true" class="or-nav__link or-nav__link--active" data-screen="map">Opportunity Map</button>
+      <button type="button" role="tab" aria-selected="false" class="or-nav__link" data-screen="profile">Profile</button>
+      <button type="button" role="tab" aria-selected="false" class="or-nav__link" data-screen="screening">Screening</button>
+      <button type="button" role="tab" aria-selected="false" class="or-nav__link" data-screen="utah">Utah View</button>
+    </div>
+  </div>
+  <div class="mk-navright" style="display:flex;align-items:center;gap:var(--space-md)">
+    <div style="display:flex;gap:var(--space-sm)">
+      <button class="or-iconbtn" aria-label="Notifications"><span class="material-symbols-outlined" aria-hidden="true">notifications</span></button>
+      <button class="or-iconbtn" aria-label="Help"><span class="material-symbols-outlined" aria-hidden="true">help</span></button>
+      <button class="or-iconbtn" aria-label="Account"><span class="material-symbols-outlined" aria-hidden="true">account_circle</span></button>
+    </div>
+    <button class="or-btn or-btn--filled">Apply Now</button>
+  </div>
+</nav>
+
+<div class="mk-scroll">
+
+<!-- ===================== 1 · OPPORTUNITY MAP (canonical) ==================== -->
+<main class="mk-page" id="screen-map" role="tabpanel" aria-label="Opportunity Map">
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Top Matches</h2>
+    <div class="mk-row" style="gap:16px">
+      <span class="mk-label">1,703 live · 412 relevant awards</span>
+      <div class="mk-row" style="gap:4px">
+        <div class="mk-pop">
+          <button class="or-iconbtn" id="filter-btn" aria-haspopup="true" aria-expanded="false" aria-controls="filter-menu" aria-label="Filter matches"><span class="material-symbols-outlined" aria-hidden="true">filter_list</span></button>
+          <div class="mk-pop__menu" id="filter-menu" role="group" aria-label="Filter by fit tier" hidden>
+            <p class="mk-pop__title">Show</p>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Likely fit</span><span class="mk-num">4</span></label>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Verify eligibility</span><span class="mk-num">5</span></label>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Adjacent</span><span class="mk-num">2</span></label>
+            <label class="mk-pop__row"><input type="checkbox" /><span>Held — missing data</span><span class="mk-num">2</span></label>
+            <label class="mk-pop__row"><input type="checkbox" /><span>Blocked</span><span class="mk-num">3</span></label>
+          </div>
+        </div>
+        <div class="mk-pop">
+          <button class="or-iconbtn" id="sort-btn" aria-haspopup="true" aria-expanded="false" aria-controls="sort-menu" aria-label="Sort matches"><span class="material-symbols-outlined" aria-hidden="true">swap_vert</span></button>
+          <div class="mk-pop__menu" id="sort-menu" role="group" aria-label="Sort order" hidden>
+            <p class="mk-pop__title">Order by</p>
+            <label class="mk-pop__row"><input type="radio" name="sort" checked /><span>Best fit</span></label>
+            <label class="mk-pop__row"><input type="radio" name="sort" /><span>Deadline soonest</span></label>
+            <label class="mk-pop__row"><input type="radio" name="sort" /><span>Largest award</span></label>
+          </div>
+        </div>
+        <button class="or-iconbtn" id="toggle-all" aria-label="Collapse all matches" title="Collapse all"><span class="material-symbols-outlined" aria-hidden="true">unfold_less</span></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="mk-grid">
+
+    <!-- span 3 — FounderProfile + ActionPlan, exactly as the screen composes them -->
+    <div class="mk-c3">
+      <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
+        <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
+        <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">NuraHealth AI</h3>
+        <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Utah, USA</span>
+        <span class="or-badge or-badge--caution" style="width:100%;justify-content:center;margin-bottom:24px"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">info</span>Confidence: Medium</span>
+        <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+          <div class="or-kv"><span class="or-kv__label">Industry</span><span class="or-kv__value">Healthcare IT</span></div>
+          <div class="or-kv"><span class="or-kv__label">ARR</span><span class="or-kv__value">$1M</span></div>
+          <div class="or-kv"><span class="or-kv__label">Raised</span><span class="or-kv__value">$2.5M</span></div>
+          <div class="or-kv or-kv--danger"><span class="or-kv__label"><span class="or-ping" aria-hidden="true"><span></span><span></span></span>Ownership</span><span class="or-kv__value">Unknown</span></div>
+        </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">PROFILE COMPLETE</span><span class="mk-meter__value">75%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="75" aria-valuemin="0" aria-valuemax="100" aria-label="PROFILE COMPLETE"><div class="mk-meter__fill" style="width:75%"></div></div>
+          <p class="mk-meter__note">3 of 4 key facts answered. Ownership is the one still blocking SBIR programs.</p>
+        </div>
+      </div>
+
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Action Plan<button class="or-btn or-btn--text or-btn--sm"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">add</span>Add task</button></div>
+        <div class="or-task or-task--current">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Draft the 3-page project pitch&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+            <div><p class="or-task__title">Draft the 3-page project pitch</p><p class="or-task__detail">NSF wants this before it invites a full proposal.</p></div></div>
+          <span class="or-task__due or-task__due--urgent">SEP 05</span>
+        </div>
+        <div class="or-task">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Check UEI and CAGE status&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+            <div><p class="or-task__title">Check UEI and CAGE status</p><p class="or-task__detail">Confirm the SAM.gov record is active, not just created.</p></div></div>
+          <span class="or-task__due">SEP 12</span>
+        </div>
+        <div class="or-task">
+          <div style="display:flex;align-items:flex-start;gap:12px">
+            <button class="mk-check" role="checkbox" aria-checked="false" aria-label="Mark &quot;Write commercialization plan&quot; complete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+            <div><p class="or-task__title">Write commercialization plan</p><p class="or-task__detail">Path to market, for the Phase I narrative.</p></div></div>
+          <span class="or-task__due">SEP 20</span>
+        </div>
+        <button class="mk-donehead" id="done-head" aria-expanded="false" aria-controls="done-list">Completed (2)<span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></button>
+        <div id="done-list" hidden>
+          <div class="or-task">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <button class="mk-check" role="checkbox" aria-checked="true" aria-label="Mark &quot;Confirm Utah incorporation&quot; incomplete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+              <div><p class="or-task__title or-task__title--done">Confirm Utah incorporation</p></div></div>
+            <span class="or-task__due">AUG 14</span>
+          </div>
+          <div class="or-task">
+            <div style="display:flex;align-items:flex-start;gap:12px">
+              <button class="mk-check" role="checkbox" aria-checked="true" aria-label="Mark &quot;Create SAM.gov account&quot; incomplete"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check</span></button>
+              <div><p class="or-task__title or-task__title--done">Create SAM.gov account</p></div></div>
+            <span class="or-task__due">AUG 11</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- span 6 — Top Matches -->
+    <div class="mk-c6">
+
+      <article class="or-opp" data-expanded="true">
+        <button class="mk-opp__toggle" aria-expanded="true" aria-controls="opp-nsf-body">
+        <div class="or-opp__head">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--fit"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check_circle</span>Likely fit</span><span class="or-opp__meta">ID: NSF-23-456</span></div>
+              <h4 class="or-opp__title">NSF SBIR Phase I</h4>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$275K</span><span class="or-opp__meta">Deadline: Oct 15</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
+          </div>
+          <p class="or-opp__lede">Seed funding for deep-tech startups to conduct R&amp;D on unproven, high-impact innovations.</p>
+        </div>
+        </button>
+
+        <!-- Canonical body is 2-col. Third column added because the brief names
+             FOUR explanation elements; auto-fit so it degrades to 2 then 1. -->
+        <div class="or-opp__body" id="opp-nsf-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div>
+            <h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5>
+            <ul class="or-opp__list"><li>Strong AI/Healthcare focus aligns with Digital Health topic.</li><li>Revenue stage shows commercial viability potential.</li><li>US-based small business requirement met.</li></ul>
+          </div>
+          <div>
+            <h5 class="or-opp__h5" style="color:var(--color-error)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">warning</span>What could disqualify</h5>
+            <ul class="or-opp__list"><li>Requires clear technical risk (not just software dev).</li><li>VC funding limits (must be &gt;50% individual owned). Verify Ownership.</li></ul>
+          </div>
+          <div>
+            <h5 class="or-opp__h5" style="color:var(--color-caution-text)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">fact_check</span>What to verify</h5>
+            <ul class="or-opp__list"><li>FY2026 topic list still names Digital Health.</li><li>Whether Phase I requires SAM.gov registration at submission.</li></ul>
+            <p class="mk-anno" style="margin-top:8px">NEW — <code>whatToVerify</code> exists on the match type; the kit card had no slot.</p>
+          </div>
+
+          <div style="grid-column:1 / -1;padding-top:12px;border-top:1px solid var(--color-border-ice)">
+            <h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)" aria-hidden="true">group</span>Who else got this money</h5>
+            <div class="or-opp__twin">
+              <span style="background:rgba(126,212,253,.2);padding:8px;border-radius:9999px;margin-top:4px;display:inline-flex" aria-hidden="true"><span class="material-symbols-outlined" style="font-size:20px;color:var(--color-secondary)">handshake</span></span>
+              <div>
+                <span style="font:500 12px/14px var(--font-label);letter-spacing:.05em;color:var(--color-secondary);text-transform:uppercase;display:block;margin-bottom:4px">Your Funding Twin</span>
+                <h6 style="margin:0;font:500 16px/24px var(--font-body);color:var(--color-text-deep)">NuraHealth AI (Salt Lake City)</h6>
+                <p style="margin:4px 0 0;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Received $256K in 2022 for “Natural Language Processing for Nursing Triage.” They had similar ARR and team size at application.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="or-opp__foot">
+          <span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 120 hours</span>
+          <div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight<span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_forward</span></button></div>
+        </div>
+      </article>
+
+      <article class="or-opp" data-expanded="false">
+        <button class="mk-opp__toggle" aria-expanded="false" aria-controls="opp-hhs-body">
+        <div class="or-opp__head">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--fit"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">check_circle</span>Likely fit</span><span class="or-opp__meta">ID: HHS-24-118</span></div>
+              <h4 class="or-opp__title">HHS SBIR — Digital Healthcare</h4>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$314K</span><span class="or-opp__meta">Deadline: Sep 5</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
+          </div>
+        </div>
+        </button>
+        <div class="or-opp__body" id="opp-hhs-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div><h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5><ul class="or-opp__list"><li>Digital health is a named priority area.</li><li>Award band overlaps your $500K–$2M need.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-error)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">warning</span>What could disqualify</h5><ul class="or-opp__list"><li>Ownership unconfirmed.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-caution-text)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">fact_check</span>What to verify</h5><ul class="or-opp__list"><li>FY2026 topic list still open to your area.</li></ul></div>
+        </div>
+        <div class="or-opp__foot"><span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 80 hours</span><div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight</button></div></div>
+      </article>
+
+      <article class="or-opp" data-expanded="false">
+        <button class="mk-opp__toggle" aria-expanded="false" aria-controls="opp-nih-body">
+        <div class="or-opp__head">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--caution">Verify eligibility</span><span class="or-opp__meta">ID: NIH-R41</span></div>
+              <h4 class="or-opp__title">NIH STTR Phase I (NINR)</h4>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:16px"><div style="text-align:right"><span class="or-opp__amount">$256K</span><span class="or-opp__meta">Deadline: Rolling</span></div><span class="material-symbols-outlined mk-opp__chev" aria-hidden="true">expand_more</span></div>
+          </div>
+        </div>
+        </button>
+        <div class="or-opp__body" id="opp-nih-body" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+          <div><h5 class="or-opp__h5"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-primary)" aria-hidden="true">done_all</span>Why it fits</h5><ul class="or-opp__list"><li>Digital health is a named priority area.</li><li>Award band overlaps your $500K–$2M need.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-error)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">warning</span>What could disqualify</h5><ul class="or-opp__list"><li>Ownership unconfirmed.</li></ul></div>
+          <div><h5 class="or-opp__h5" style="color:var(--color-caution-text)"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">fact_check</span>What to verify</h5><ul class="or-opp__list"><li>FY2026 topic list still open to your area.</li></ul></div>
+        </div>
+        <div class="or-opp__foot"><span class="or-opp__meta" style="color:var(--color-on-surface-variant);margin-left:8px">Estimated prep time: 80 hours</span><div style="display:flex;gap:12px"><button class="or-btn or-btn--outline">Save for Later</button><button class="or-btn or-btn--filled">Start Pre-flight</button></div></div>
+      </article>
+
+      <div class="or-card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px">
+          <div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px"><span class="or-badge or-badge--caution">Uncertain eligibility</span><span class="mk-label">ID: NIH-R43</span></div>
+            <h4 style="margin:0;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">NIH SBIR (NINR)</h4>
+            <p style="margin:4px 0 0;max-width:640px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">National Institute of Nursing Research grants. Highly relevant. We can't confirm eligibility against the VC backing limits until we know your ownership split.</p>
+          </div>
+          <button class="or-btn or-btn--text">Resolve<span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">edit</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- span 3 — UnlockResults, the canonical right rail -->
+    <div class="mk-c3">
+      <div class="or-card mk-ask">
+        <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
+        <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label class="or-option"><input type="radio" name="own-map" /><span><span class="or-option__title">&gt;50% Individual/Founder Owned</span><span class="or-option__hint">Standard SBIR eligibility</span></span></label>
+          <label class="or-option"><input type="radio" name="own-map" /><span><span class="or-option__title">&gt;50% VC/PE Owned</span><span class="or-option__hint">Restricts some agencies</span></span></label>
+        </div>
+        <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
+      </div>
+
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!-- ============================ 2 · PROFILE ============================== -->
+<main class="mk-page" id="screen-profile" role="tabpanel" aria-label="Profile" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Company Profile</h2>
+    <span class="mk-label">2 required · 68% complete</span>
+  </div>
+
+  <div class="mk-grid">
+    <div class="mk-c3">
+      <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
+        <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
+        <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">NuraHealth AI</h3>
+        <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Utah, USA</span>
+        <span class="or-badge or-badge--caution" style="width:100%;justify-content:center;margin-bottom:24px"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">info</span>68% complete</span>
+        <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+          <div class="or-kv"><span class="or-kv__label">Industry</span><span class="or-kv__value">Healthcare IT</span></div>
+          <div class="or-kv"><span class="or-kv__label">ARR</span><span class="or-kv__value">$1M</span></div>
+          <div class="or-kv"><span class="or-kv__label">Raised</span><span class="or-kv__value">$2.5M</span></div>
+          <div class="or-kv or-kv--danger"><span class="or-kv__label"><span class="or-ping" aria-hidden="true"><span></span><span></span></span>Ownership</span><span class="or-kv__value">Unknown</span></div>
+        </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">PROFILE COMPLETE</span><span class="mk-meter__value">68%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="68" aria-valuemin="0" aria-valuemax="100" aria-label="PROFILE COMPLETE"><div class="mk-meter__fill" style="width:68%"></div></div>
+          <p class="mk-meter__note">2 required answers left before we can rank anything.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mk-c6">
+
+      <div class="or-card or-card--sunken" style="padding:12px 16px">
+        <div class="mk-row" style="gap:16px">
+          <span class="mk-label">Where each answer came from</span>
+          <span class="or-badge or-badge--primary">You said</span>
+          <span class="or-badge or-badge--neutral">We inferred</span>
+          <span class="or-badge or-badge--secondary">You edited</span>
+          <span class="or-badge or-badge--danger">Unknown</span>
+        </div>
+      </div>
+
+      <div class="or-card">
+        <h4 class="mk-h4">Eligibility</h4>
+        <div class="mk-stack">
+          <div class="or-kv or-kv--danger"><span class="or-kv__label"><span class="or-ping" aria-hidden="true"><span></span><span></span></span>Active R&amp;D</span><span class="mk-row"><span class="or-kv__value">Unknown</span><span class="or-badge or-badge--caution">Required</span><button class="or-btn or-btn--tonal or-btn--sm">Answer</button></span></div>
+          <div class="or-kv"><span class="or-kv__label">Registered on SAM.gov</span><span class="mk-row"><span class="or-kv__value">Yes</span><span class="or-badge or-badge--secondary">You edited</span><button class="or-iconbtn or-iconbtn--sm" aria-label="Edit SAM.gov registration"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">edit</span></button></span></div>
+          <p style="margin:0;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">You changed this from <b>No</b> on 12 Aug — the agent won't overwrite it. <span class="mk-anno">manual edits are sticky</span></p>
+        </div>
+      </div>
+
+      <div class="or-card">
+        <h4 class="mk-h4">Scale</h4>
+        <div class="mk-stack">
+          <div class="or-kv"><span class="or-kv__label">Employees</span><span class="mk-row"><span class="or-kv__value">15</span><span class="or-badge or-badge--primary">You said</span><button class="or-iconbtn or-iconbtn--sm" aria-label="Edit employees"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">edit</span></button></span></div>
+          <div class="or-kv"><span class="or-kv__label">Small business (SBA)</span><span class="mk-row"><span class="or-kv__value">Yes</span><span class="or-badge or-badge--neutral">We inferred</span><button class="or-iconbtn or-iconbtn--sm" aria-label="Edit small business status"><span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">edit</span></button></span></div>
+          <p style="margin:0;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Inferred from 15 employees (&lt;500). Drives 6 eligibility screens — correct it if we're wrong.</p>
+        </div>
+      </div>
+
+      <div class="or-card">
+        <label class="mk-label" for="own-words" style="display:block;margin-bottom:12px">IN YOUR WORDS <span class="mk-anno">verbatim source — re-extracting re-derives everything above</span></label>
+        <textarea class="or-field" id="own-words" rows="4">We're a 15-person software company based in Lehi, Utah. Our SaaS platform uses AI to reduce the administrative burden on nurses. We're at $1M ARR and we've raised $2.5M. We're looking for $500K to $2M in non-dilutive funding.</textarea>
+      </div>
+    </div>
+
+    <div class="mk-c3">
+      <div class="or-card mk-ask">
+        <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
+        <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Two required basics are missing, so ranking is held. Early numbers inflate and then collapse — we'd rather wait.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label class="or-option"><input type="radio" name="own-p" /><span><span class="or-option__title">&gt;50% Individual/Founder Owned</span><span class="or-option__hint">Standard SBIR eligibility</span></span></label>
+          <label class="or-option"><input type="radio" name="own-p" /><span><span class="or-option__title">&gt;50% VC/PE Owned</span><span class="or-option__hint">Restricts some agencies</span></span></label>
+        </div>
+        <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
+      </div>
+
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!-- =========================== 3 · SCREENING ============================= -->
+<main class="mk-page" id="screen-screening" role="tabpanel" aria-label="Screening" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Screening</h2>
+    <span class="mk-label">4,595 screened · 9 rules</span>
+  </div>
+
+  <div class="mk-grid">
+    <div class="mk-c3">
+      <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
+        <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">NH</span>
+        <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">5 of 9 cleared</h3>
+        <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Federal screens</span>
+        <span class="or-badge or-badge--caution" style="width:100%;justify-content:center;margin-bottom:24px"><span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">info</span>2 answers from ranking</span>
+        <div class="mk-meter" style="margin-top:0;padding-top:0;border-top:0">
+          <div class="mk-meter__head"><span class="mk-label">MONEY CURRENTLY HELD</span><span class="mk-meter__value">$2.4M</span></div>
+          <div class="mk-stackbar" role="img" aria-label="Of $2.4M held: $1.0M you can settle, $1.4M only the notice can settle, plus 3 blocked programs">
+            <span style="width:42%;background:var(--color-caution-text)"></span>
+            <span style="width:58%;background:var(--color-outline-variant)"></span>
+          </div>
+          <div class="mk-legend">
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-caution-text)"></span>You can settle</span><span class="mk-num">$1.0M</span></div>
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-outline-variant)"></span>Only the notice can</span><span class="mk-num">$1.4M</span></div>
+            <div class="mk-legend__row"><span class="mk-legend__key"><span class="mk-legend__dot" style="background:var(--color-error)"></span>Blocked outright</span><span class="mk-num">3 programs</span></div>
+          </div>
+          <p class="mk-meter__note">The grey share is the honest part — no answer you give can free it.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mk-c6">
+
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><div class="mk-row"><span class="or-badge or-badge--caution">Unresolved</span><span class="mk-label">sbir:ownership</span></div><span class="mk-num" style="color:var(--color-primary)">$680K</span></div>
+        <h4 style="margin:0 0 4px;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">Majority US ownership</h4>
+        <p style="margin:0 0 16px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">SBIR statute requires &gt;50% ownership by US citizens or permanent residents. One answer settles it for every SBIR program at once.</p>
+        <div class="mk-between"><span class="mk-label">4 programs · NIH, NSF, HHS</span><button class="or-btn or-btn--filled or-btn--sm">Answer this</button></div>
+      </div>
+
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><div class="mk-row"><span class="or-badge or-badge--caution">Unresolved</span><span class="mk-label">registration:sam</span></div><span class="mk-num" style="color:var(--color-primary)">$320K</span></div>
+        <h4 style="margin:0 0 4px;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">SAM.gov registration</h4>
+        <p style="margin:0 0 16px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Every federal award needs an active registration with a UEI. It takes 2–3 weeks, so start before you apply, not after.</p>
+        <div class="mk-between"><span class="mk-label">7 programs</span><div class="mk-row"><button class="or-btn or-btn--outline or-btn--sm">Start registration</button><button class="or-btn or-btn--filled or-btn--sm">Answer this</button></div></div>
+      </div>
+
+      <!-- The honest half — 57% of unknown-gated dollars, per readiness.ts -->
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><span class="or-badge or-badge--caution">Uncertain eligibility</span><span class="mk-num" style="color:var(--color-outline)">$1.4M</span></div>
+        <h4 style="margin:0 0 4px;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">We can't determine these — and neither can any answer you give us</h4>
+        <p style="margin:0 0 16px;max-width:640px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">11 programs state eligibility in prose we can't parse into a rule — “applicants must demonstrate institutional capacity”. We rank these <b>verify eligibility</b> rather than guessing, and point you at the paragraph to read.</p>
+        <div class="mk-stack">
+          <div class="or-kv"><span class="or-kv__label">NIH R41 — institutional capacity clause</span><span class="mk-row"><span class="or-badge or-badge--caution">Verify</span><button class="or-btn or-btn--text or-btn--sm">Read the clause</button></span></div>
+          <div class="or-kv"><span class="or-kv__label">HHS — “eligible entity” definition</span><span class="mk-row"><span class="or-badge or-badge--caution">Verify</span><button class="or-btn or-btn--text or-btn--sm">Read the clause</button></span></div>
+        </div>
+        <p class="mk-anno" style="margin-top:12px">Without this section the page promises money no answer can unlock.</p>
+      </div>
+
+      <div class="or-alert or-alert--danger">
+        <span class="material-symbols-outlined" style="color:var(--color-error);margin-top:2px" aria-hidden="true">warning</span>
+        <div style="flex:1">
+          <h4 class="or-alert__title">Blocked — non-profit / academic only</h4>
+          <div class="or-alert__body">3 programs restrict applicants to non-profits, IHEs or state agencies. You're a for-profit company; no answer fixes this, so we've stopped ranking them.</div>
+          <button class="or-btn or-btn--danger-text or-btn--sm">Show them anyway<span class="material-symbols-outlined" style="font-size:14px" aria-hidden="true">arrow_forward</span></button>
+        </div>
+      </div>
+
+      <div class="or-card or-card--sunken">
+        <h4 class="mk-h4" style="margin-bottom:12px">Cleared — 5 screens</h4>
+        <div class="mk-stack">
+          <div class="or-kv"><span class="or-kv__label">Small business (&lt;500 employees)</span><span class="mk-row"><span class="or-badge or-badge--fit">Pass</span><span class="or-badge or-badge--neutral">We inferred</span></span></div>
+          <div class="or-kv"><span class="or-kv__label">For-profit entity</span><span class="mk-row"><span class="or-badge or-badge--fit">Pass</span><span class="or-badge or-badge--primary">You said</span></span></div>
+          <div class="or-kv"><span class="or-kv__label">Location — Utah, eligible state</span><span class="mk-row"><span class="or-badge or-badge--fit">Pass</span><span class="or-badge or-badge--primary">You said</span></span></div>
+          <div class="or-kv"><span class="or-kv__label">Award size overlaps your need</span><span class="mk-row"><span class="or-badge or-badge--fit">Pass</span><span class="or-badge or-badge--primary">You said</span></span></div>
+          <div class="or-kv"><span class="or-kv__label">Deadline still open</span><span class="mk-row"><span class="or-badge or-badge--fit">Pass</span><span class="or-badge or-badge--neutral">Source data</span></span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mk-c3">
+      <div class="or-card mk-ask">
+        <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
+        <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <label class="or-option"><input type="radio" name="own-s" /><span><span class="or-option__title">&gt;50% Individual/Founder Owned</span><span class="or-option__hint">Standard SBIR eligibility</span></span></label>
+          <label class="or-option"><input type="radio" name="own-s" /><span><span class="or-option__title">&gt;50% VC/PE Owned</span><span class="or-option__hint">Restricts some agencies</span></span></label>
+        </div>
+        <button class="or-btn or-btn--tonal or-btn--block" style="margin-top:24px">Save Details</button>
+      </div>
+
+      <div class="or-card or-card--flush">
+        <div class="mk-cardhead">Deadlines</div>
+        <div class="mk-cardbody"><div class="or-timeline">
+          <div class="or-timeline__rule"></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot or-timeline__dot--current"></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date or-timeline__date--current" style="color:var(--color-primary);font-weight:700">SEP 05</span><span class="or-timeline__title" style="font-weight:700">NSF Project Pitch</span><span class="or-badge or-badge--danger">IN 3 DAYS</span></div><p class="or-timeline__detail">Required before you may submit a full proposal.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">SEP 12</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">SAM.gov must be active</span></div><p class="or-timeline__detail">Registration takes 2–3 weeks — start now to make Oct 15.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">OCT 15</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NSF SBIR Phase I closes</span></div><p class="or-timeline__detail">Submit via Research.gov by 5:00 PM ET.</p></div></div>
+          <div class="or-timeline__item" style="display:flex;gap:16px"><div class="or-timeline__dot "></div><div><div class="mk-row" style="gap:8px"><span class="or-timeline__date " style="">Rolling</span><span class="or-timeline__title" style="color:var(--color-on-surface-variant)">NIH SBIR (NINR)</span></div><p class="or-timeline__detail">No fixed close date — we won't invent one.</p></div></div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+
+<!-- =========================== 4 · UTAH VIEW ============================= -->
+<main class="mk-page" id="screen-utah" role="tabpanel" aria-label="Utah View" hidden>
+    <div class="mk-pagehead">
+    <h2 class="mk-h3">Utah Winners</h2>
+    <span class="mk-label">USAspending + NIH RePORTER · cached 7d</span>
+  </div>
+
+  <div class="mk-grid">
+    <div class="mk-c3">
+      <div class="or-card" style="overflow:hidden;display:flex;flex-direction:column;align-items:center;text-align:center">
+        <span class="or-avatar" style="width:80px;height:80px;font-size:28px;margin-bottom:12px;margin-top:4px">UT</span>
+        <h3 style="margin:0 0 4px;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">Utah</h3>
+        <span class="mk-label" style="text-transform:uppercase;margin-bottom:12px">Your programs</span>
+        <span class="or-badge or-badge--secondary" style="width:100%;justify-content:center;margin-bottom:24px">37 winners found</span>
+        <div style="width:100%;display:flex;flex-direction:column;gap:8px">
+          <div class="or-kv"><span class="or-kv__label">Median award</span><span class="or-kv__value">$261,000</span></div>
+          <div class="or-kv"><span class="or-kv__label">Total awarded</span><span class="or-kv__value">$18.4M</span></div>
+          <div class="or-kv"><span class="or-kv__label">Utah-only programs</span><span class="or-kv__value">24</span></div>
+        </div>
+        <div class="mk-meter">
+          <div class="mk-meter__head"><span class="mk-label">EVIDENCE LOADED</span><span class="mk-meter__value">100%</span></div>
+          <div class="mk-meter__track" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="EVIDENCE LOADED"><div class="mk-meter__fill" style="width:100%"></div></div>
+          <p class="mk-meter__note">37 of 37 Utah award records fetched and cached.</p>
+        </div>
+      </div>
+
+      <div class="or-card">
+        <h4 class="mk-h4">Where the money lands</h4>
+        <div class="mk-stack">
+          <div><div class="mk-between" style="margin-bottom:4px"><span style="font:400 14px/20px var(--font-body);color:var(--color-text-deep)">Salt Lake City</span><span class="mk-num">$11.2M</span></div><div class="or-progress or-progress--rounded" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" aria-label="Salt Lake City"><div class="or-progress__fill" style="width:100%;border-radius:9999px"></div></div></div>
+          <div><div class="mk-between" style="margin-bottom:4px"><span style="font:400 14px/20px var(--font-body);color:var(--color-text-deep)">Provo / Orem</span><span class="mk-num">$3.6M</span></div><div class="or-progress or-progress--rounded" role="progressbar" aria-valuenow="32" aria-valuemin="0" aria-valuemax="100" aria-label="Provo Orem"><div class="or-progress__fill" style="width:32%;border-radius:9999px"></div></div></div>
+          <div><div class="mk-between" style="margin-bottom:4px"><span style="font:400 14px/20px var(--font-body);color:var(--color-text-deep)">Lehi <span class="or-badge or-badge--primary">You</span></span><span class="mk-num">$2.4M</span></div><div class="or-progress or-progress--rounded" role="progressbar" aria-valuenow="21" aria-valuemin="0" aria-valuemax="100" aria-label="Lehi"><div class="or-progress__fill" style="width:21%;border-radius:9999px;background:var(--color-secondary)"></div></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mk-c6">
+      <p class="mk-anno" style="margin:0">evidence.nearbyWinners — computed today, rendered nowhere</p>
+
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><div><h4 style="margin:0;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">University research hospital</h4><span class="mk-label">Salt Lake City, UT · NIH R41 · FY2024</span></div><span class="mk-num" style="font-size:20px;color:var(--color-secondary)">$1,140,000</span></div>
+        <p style="margin:0 0 12px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clinical documentation burden reduction using natural-language processing on nursing notes…</p>
+        <span class="or-badge or-badge--secondary">Same program as your #1 match</span>
+      </div>
+
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><div><h4 style="margin:0;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">Digital health company</h4><span class="mk-label">Provo, UT · NSF SBIR Phase I · FY2023</span></div><span class="mk-num" style="font-size:20px;color:var(--color-secondary)">$275,000</span></div>
+        <p style="margin:0 0 12px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Machine-learning triage for hospital staffing and shift allocation…</p>
+        <div class="mk-row"><span class="or-badge or-badge--fit">14 people at award</span><span class="or-badge or-badge--neutral">Closest to your size</span></div>
+      </div>
+
+      <div class="or-card">
+        <div class="mk-between" style="margin-bottom:8px"><div><h4 style="margin:0;font:600 18px/26px var(--font-headline);color:var(--color-text-deep)">Medical-device startup</h4><span class="mk-label">Lehi, UT · HHS SBIR Phase II · FY2023</span></div><span class="mk-num" style="font-size:20px;color:var(--color-secondary)">$1,900,000</span></div>
+        <p style="margin:0 0 12px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Bedside monitoring integration for electronic health record systems…</p>
+        <span class="or-badge or-badge--primary">Same city as you</span>
+      </div>
+
+      <button class="or-btn or-btn--outline or-btn--block">Show all 37 Utah winners</button>
+    </div>
+
+    <div class="mk-c3">
+      <div class="or-card">
+        <h4 class="mk-h4">Utah-only programs</h4>
+        <div class="mk-stack">
+          <div class="or-kv"><span class="or-kv__label">Utah SBIR/STTR match</span><span class="or-badge or-badge--fit">Likely fit</span></div>
+          <div class="or-kv"><span class="or-kv__label">Technology Commercialization</span><span class="or-badge or-badge--fit">Likely fit</span></div>
+          <div class="or-kv"><span class="or-kv__label">Custom Fit training funds</span><span class="or-badge or-badge--caution">Verify</span></div>
+          <div class="or-kv"><span class="or-kv__label">Rural Employment Expansion</span><span class="or-badge or-badge--neutral">Adjacent</span></div>
+        </div>
+        <button class="or-btn or-btn--text or-btn--sm" style="margin-top:12px">See all 24</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+</div><!-- /mk-scroll -->
+
+<!-- AssistantDrawer — screen-assistant-drawer.jsx, faithfully -->
+<aside class="mk-drawer" id="drawer" aria-label="Assistant" data-open="false" aria-hidden="true">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:24px;border-bottom:1px solid var(--color-border-ice)">
+    <h2 style="margin:0;font:600 24px/32px var(--font-headline);color:var(--color-text-deep)">Assistant</h2>
+    <div style="display:flex;gap:4px">
+      <button class="or-iconbtn or-iconbtn--sm" aria-label="History"><span class="material-symbols-outlined" style="font-size:20px" aria-hidden="true">history</span></button>
+      <button class="or-iconbtn or-iconbtn--sm" aria-label="More"><span class="material-symbols-outlined" style="font-size:20px" aria-hidden="true">more_vert</span></button>
+      <button class="or-iconbtn or-iconbtn--sm" id="drawer-close" aria-label="Close"><span class="material-symbols-outlined" style="font-size:20px" aria-hidden="true">close</span></button>
+    </div>
+  </div>
+
+  <div style="flex:1;overflow-y:auto;padding:24px;display:flex;flex-direction:column;gap:24px">
+    <div class="or-alert or-alert--info">
+      <span class="material-symbols-outlined" style="color:var(--color-primary);margin-top:2px" aria-hidden="true">info</span>
+      <div style="flex:1">
+        <h4 class="or-alert__title">The Assistant has just been updated to help you better!</h4>
+        <div class="or-alert__body">You may now opt-in to share specific project details for better matching.</div>
+        <button class="or-btn or-btn--tonal or-btn--sm">Permission settings</button>
+      </div>
+    </div>
+
+    <div style="align-self:flex-end;max-width:85%;background:var(--color-primary-fixed);color:var(--color-on-primary-fixed);border-radius:var(--radius-lg);padding:8px 12px;font:400 14px/20px var(--font-body)">
+      We're majority founder-owned — does that clear the SBIR rule?
+    </div>
+
+    <div style="margin-top:auto">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+        <h3 style="margin:0;font:500 18px/28px var(--font-body);color:var(--color-text-deep)">How can I assist you?</h3>
+        <span class="material-symbols-outlined" style="font-size:20px;color:var(--color-primary)" aria-hidden="true">auto_awesome</span>
+      </div>
+      <p style="margin:0 0 8px" class="mk-label">SUGGESTIONS</p>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <button type="button" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px;border:0;background:none;cursor:pointer;border-radius:var(--radius-default);font:400 14px/20px var(--font-body);color:var(--color-text-deep)"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)" aria-hidden="true">description</span>Grant Eligibility</button>
+        <button type="button" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px;border:0;background:none;cursor:pointer;border-radius:var(--radius-default);font:400 14px/20px var(--font-body);color:var(--color-text-deep)"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)" aria-hidden="true">description</span>SAM.gov Status</button>
+        <button type="button" style="display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:8px;border:0;background:none;cursor:pointer;border-radius:var(--radius-default);font:400 14px/20px var(--font-body);color:var(--color-text-deep)"><span class="material-symbols-outlined" style="font-size:18px;color:var(--color-outline)" aria-hidden="true">description</span>Match Reasoning</button>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding:16px;border-top:1px solid var(--color-border-ice);background:var(--color-background)">
+    <div class="or-composer">
+      <label class="mk-vh" for="composer">Message the Assistant</label>
+      <textarea id="composer" rows="2" placeholder="I need help with my application…"></textarea>
+      <div class="or-composer__bar">
+        <button type="button" class="or-composer__model">GPT-4<span class="material-symbols-outlined" style="font-size:16px" aria-hidden="true">expand_more</span></button>
+        <button type="button" class="or-composer__send" aria-label="Send"><span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">arrow_upward</span></button>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<button class="or-btn or-btn--filled or-btn--pill mk-fab" id="fab">
+  <span class="material-symbols-outlined" style="font-size:18px" aria-hidden="true">auto_awesome</span>Assistant
+</button>
+
+<script>
+  const screens = ["map", "profile", "screening", "utah"];
+  function show(name) {
+    for (const b of document.querySelectorAll("#tabs [data-screen]")) {
+      const on = b.dataset.screen === name;
+      b.classList.toggle("or-nav__link--active", on);
+      b.setAttribute("aria-selected", String(on));
+    }
+    for (const s of screens) document.getElementById("screen-" + s).hidden = s !== name;
+    document.querySelector(".mk-scroll").scrollTo(0, 0);
+  }
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("[data-screen]"); if (b) show(b.dataset.screen);
+  });
+  document.getElementById("tabs").addEventListener("keydown", (e) => {
+    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
+    const btns = [...document.querySelectorAll("#tabs [data-screen]")];
+    const i = btns.findIndex((b) => b.getAttribute("aria-selected") === "true");
+    const n = btns[(i + (e.key === "ArrowRight" ? 1 : btns.length - 1)) % btns.length];
+    show(n.dataset.screen); n.focus();
+  });
+  // Disclosure list: header row is the click target, chevron is the affordance,
+  // aria-expanded carries the state. Several may be open at once.
+  document.addEventListener("click", (e) => {
+    const t = e.target.closest(".mk-opp__toggle");
+    if (!t) return;
+    const card = t.closest(".or-opp");
+    const open = card.dataset.expanded !== "true";
+    card.dataset.expanded = String(open);
+    t.setAttribute("aria-expanded", String(open));
+  });
+  const toggleAll = document.getElementById("toggle-all");
+  toggleAll.addEventListener("click", () => {
+    const cards = [...document.querySelectorAll("#screen-map .or-opp")];
+    const open = toggleAll.dataset.state === "collapsed";
+    for (const c of cards) {
+      c.dataset.expanded = String(open);
+      c.querySelector(".mk-opp__toggle").setAttribute("aria-expanded", String(open));
+    }
+    toggleAll.dataset.state = open ? "expanded" : "collapsed";
+    toggleAll.querySelector("span").textContent = open ? "unfold_less" : "unfold_more";
+    const label = open ? "Collapse all matches" : "Expand all matches";
+    toggleAll.setAttribute("aria-label", label);
+    toggleAll.title = open ? "Collapse all" : "Expand all";
+  });
+
+  // Popovers: one open at a time, dismissed by outside click or Escape.
+  const pops = [["filter-btn","filter-menu"],["sort-btn","sort-menu"]].map(([b,m]) =>
+    [document.getElementById(b), document.getElementById(m)]);
+  function closePops(except) {
+    for (const [btn, menu] of pops) {
+      if (menu === except) continue;
+      menu.hidden = true; btn.setAttribute("aria-expanded", "false");
+    }
+  }
+  for (const [btn, menu] of pops) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = menu.hidden;
+      closePops(open ? menu : null);
+      menu.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+    });
+    menu.addEventListener("click", (e) => e.stopPropagation());
+  }
+  document.addEventListener("click", () => closePops(null));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePops(null); });
+
+  const doneHead = document.getElementById("done-head"), doneList = document.getElementById("done-list");
+  doneHead.addEventListener("click", () => {
+    const open = doneList.hidden;
+    doneList.hidden = !open;
+    doneHead.setAttribute("aria-expanded", String(open));
+  });
+  // Checkbox is the single completion control on every task row.
+  document.addEventListener("click", (e) => {
+    const c = e.target.closest(".mk-check");
+    if (!c) return;
+    const on = c.getAttribute("aria-checked") !== "true";
+    c.setAttribute("aria-checked", String(on));
+    const title = c.closest(".or-task").querySelector(".or-task__title");
+    title.classList.toggle("or-task__title--done", on);
+  });
+
+  const drawer = document.getElementById("drawer"), fab = document.getElementById("fab");
+  function setDrawer(open) {
+    drawer.dataset.open = String(open);
+    drawer.setAttribute("aria-hidden", String(!open));
+    fab.hidden = open;
+    document.body.dataset.drawer = String(open);
+  }
+  document.getElementById("drawer-close").addEventListener("click", () => setDrawer(false));
+  fab.addEventListener("click", () => setDrawer(true));
+</script>
+</body>
+</html>
