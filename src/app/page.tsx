@@ -19,7 +19,7 @@
 
 import type { Metadata } from "next";
 import type { Opportunity } from "@/lib/types";
-import { countBySource } from "@/lib/engine/retrieve";
+import { countLiveOpportunities } from "@/lib/engine/retrieve";
 import { localIsoDate } from "@/lib/engine/dates";
 import { buildTimeline } from "@/lib/engine/timeline";
 import DashboardView from "./components/dashboard/dashboard-view";
@@ -30,11 +30,16 @@ export const metadata: Metadata = {
   description: "Your funding matches, what's blocking them, and what to do next.",
 };
 
-/** Programs under monitoring. Null rather than a guess if ingest hasn't run. */
-function liveProgramCount(): number | null {
+/**
+ * Programs a founder could apply to today. Null rather than a guess if ingest
+ * hasn't run. See `countLiveOpportunities` for why this is not the row total:
+ * summing every source called 4,596 rows "live" when 2,864 of them are
+ * assistance-listing catalogue entries with no deadline to miss.
+ */
+function liveProgramCount(today: string): number | null {
   try {
-    const total = Object.values(countBySource()).reduce((a, n) => a + n, 0);
-    return total > 0 ? total : null;
+    const n = countLiveOpportunities(today);
+    return n > 0 ? n : null;
   } catch {
     return null;
   }
@@ -61,7 +66,7 @@ export default function DashboardPage() {
       steps={steps}
       matchedOpportunities={matchedOpportunities}
       today={today}
-      liveCount={liveProgramCount()}
+      liveCount={liveProgramCount(today)}
       // Say so on the page. A reader comparing this branch against another
       // build should never have to guess which parts are real.
       sample

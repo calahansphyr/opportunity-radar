@@ -6,7 +6,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getOpportunityById } from "@/lib/engine/retrieve";
 import { formatUsdCompact } from "@/lib/engine/meter";
+import { getReasoning } from "@/lib/reasoning/db";
+import { getPursuitByOpportunity } from "@/lib/pursuit/db";
 import PursuitPanel from "./pursuit-panel";
+import MatchReasoning from "./match-reasoning";
+import type { ReasoningSource } from "./match-reasoning";
 
 export const runtime = "nodejs";
 
@@ -26,6 +30,39 @@ const fmt = (n: number | null) => (n == null ? "—" : formatUsdCompact(n));
 function daysUntil(iso: string | null): number | null {
   if (!iso) return null;
   return Math.ceil((Date.parse(iso) - Date.now()) / 86400000);
+}
+
+/**
+ * Where the reasoning for this opportunity comes from, best source first:
+ *
+ *   1. `match_reasoning` — written for every match of every completed report,
+ *      so it covers "I was just matched to this" without any further action.
+ *   2. `pursuits.match_json` — the RankedMatch captured when a pursuit was
+ *      started. Older, but it is the report the founder actually committed to.
+ *   3. Nothing. A real state: this founder has not been matched here.
+ */
+function reasoningFor(opportunityId: string): ReasoningSource | null {
+  const stored = getReasoning(opportunityId);
+  if (stored) {
+    return {
+      match: stored.match,
+      evidence: stored.evidence,
+      profileName: stored.profileName,
+      createdAt: stored.createdAt,
+      origin: "report",
+    };
+  }
+  const pursuit = getPursuitByOpportunity(opportunityId);
+  if (pursuit?.match) {
+    return {
+      match: pursuit.match,
+      evidence: null,
+      profileName: pursuit.profile.name,
+      createdAt: pursuit.createdAt,
+      origin: "pursuit",
+    };
+  }
+  return null;
 }
 
 export default async function OpportunityPage({ params }: Params) {
@@ -105,6 +142,10 @@ export default async function OpportunityPage({ params }: Params) {
           }
         />
       </section>
+
+      {/* Why it matched comes BEFORE the pursuit panel: you read the case for
+          applying, then decide to build a plan — not the other way round. */}
+      <MatchReasoning source={reasoningFor(o.id)} />
 
       {/* pursuit workspace: plan + tracker (full width — carries its own grid) */}
       <PursuitPanel opportunityId={o.id} />

@@ -14,26 +14,32 @@ in `src/app/globals.css`.
 This is a proof of concept. The UX is the deliverable; the numbers below are
 known-wrong and are listed so nobody has to rediscover them.
 
-1. **"N live" in the page header overcounts.** `page.tsx` sums
-   `countBySource()`, which is every row in `opportunities` — currently 4,596:
-   1,707 grants.gov + 2,864 assistance listings + 25 Utah. Assistance listings
-   are catalogue entries, not open solicitations, and the total includes
-   forecast and closed records. The honest figure is closer to the mock's
-   1,703. **Fix:** count only `status IN ('posted','open')` with
-   `close_date >= today`, and say "programs" rather than "live" for the rest.
+1. ~~**"N live" in the page header overcounts.**~~ **FIXED.**
+   `countLiveOpportunities()` in `retrieve.ts` now counts what a founder could
+   actually apply to today: not `assistance_listing` (catalogue entries with
+   no deadline, permanently status "open" — 2,864 of the old 4,596), status in
+   posted/open, and close date null-or-future. **1,146** rather than 4,596.
+   The header reads "open now", not "live", because the words differ.
 
-2. **The top match is a seeded demo row.** `demo:e2e-1786750996652` ("FY26 SBIR
-   Phase I: AI Tools to Reduce Clinical Administrative Burden") is the best
-   topical fit in the DB for eval case 1 and it resolves on
-   `/opportunity/[id]`, but it came from `scripts/demo-inject.ts`, not from
-   ingest. Its raw id is no longer displayed — cards show the ALN/CFDA number
-   instead — but it should be replaced once real SBIR ingest lands.
+2. **The top match is a seeded demo row, and this is the least-bad option.**
+   `demo:e2e-1786750996652` came from `scripts/demo-inject.ts`, not ingest.
+   Its raw id is not displayed — cards show the ALN/CFDA number. I looked at
+   replacing it: of the 63 open `kind='sbir_sttr'` rows, the realistic
+   alternatives are NIH *parent* announcements (`grants_gov:359671`,
+   `:359757`) which publish **no award ceiling and no expected-award count**.
+   Swapping would render an em-dash where the award figure goes, kill the odds
+   line and flatten the difficulty bars — a worse page built from better
+   provenance. Kept the demo row; revisit when a themed SBIR solicitation with
+   real numbers is in the DB.
 
-3. **No SBIR source is ingested.** `countBySource()` returns only
-   `grants_gov`, `assistance_listing` and `utah`. Every SBIR/STTR program on
-   the Dashboard is either a grants.gov row that happens to be SBIR or the
-   demo row above. `OpportunitySource` already has an `sbir` member with
-   nothing writing to it.
+3. ~~**No SBIR source is ingested.**~~ **NOT A DEFECT — I had this wrong.**
+   `scripts/ingest/grants-gov.ts:104` already sets `kind: "sbir_sttr"` for any
+   title or number matching `/SBIR|STTR/i`, and the ingest searches with an
+   empty keyword across `forecasted|posted`, so it is not under-sweeping.
+   `OpportunitySource.sbir` is unused because **SBIR.gov's API returns 403
+   "maintenance"** — documented at `docs/api-notes.md:42`, which names
+   grants.gov keyword flagging as the sanctioned fallback. That fallback is
+   what is running. Nothing to fix; re-point at SBIR.gov only if it comes back.
 
 4. **Ranked prose is authored, not generated.** `whyFit`,
    `whatCouldDisqualify`, `whatToVerify` and `nextSteps` in `fixture.ts` are
@@ -60,6 +66,34 @@ known-wrong and are listed so nobody has to rediscover them.
    that are out of scope for this build. They render an honest "not built yet"
    card so the primary nav has no 404s.
 
+## Match reasoning: where it lives now
+
+`/opportunity/[id]` renders a "WHY THIS MATCHED YOU" section above the pursuit
+panel — the long-form home for the four ranked fields, as full prose. The
+Dashboard shows the same fields as bullets for triage; this is where the
+unabridged version lives.
+
+- **Store:** `src/lib/reasoning/db.ts`, a new module owning
+  `match_reasoning (opportunity_id, company_id, match_json, evidence_json,
+  profile_name, created_at)` via `CREATE TABLE IF NOT EXISTS`, the same pattern
+  `monitor/db.ts` and `pursuit/db.ts` already use. **No `db.ts` edit and no
+  `types.ts` edit** — it stores `RankedMatch` and `EvidenceSummary` as they are.
+- **Write:** `sseResponse()` in `api/engine-facade.ts`, the single choke point
+  both `/api/analyze` and `/api/answer` pass through. Best-effort: a storage
+  failure logs and is swallowed, because it must never cost a founder a scan.
+  Re-running replaces prior reasoning for the same (opportunity, company) —
+  stale reasoning would let the page contradict the Dashboard.
+- **Read:** `match_reasoning` → `pursuits.match_json` (the RankedMatch captured
+  when a pursuit was started) → nothing. "Nothing" is a real state and renders
+  as an honest empty with a link to run a scan, not an empty shell.
+- **Seeding:** `pnpm tsx scripts/seed-reasoning.ts` writes the Dashboard
+  fixture's matches through the same `saveReportReasoning()` the facade uses,
+  so seeded rows are shape-identical to live ones. Needed only while the LLM
+  backend has no credit; `--clean` removes them.
+
+Note the held row (`grants_gov:363255`) has no reasoning by design — it was
+never ranked, so its detail page correctly shows the empty state.
+
 ## Type changes this module wants (per CLAUDE.md, proposed not made)
 
 1. **`RankedMatch` should carry `string[]`, not `string`.** The Dashboard
@@ -75,19 +109,35 @@ known-wrong and are listed so nobody has to rediscover them.
    whatToVerify: string[];
    ```
 
-   Until then, `rank.ts`'s prompt should ask for short, self-contained
-   sentences, or the splitter will produce fragments on live output. The
-   longer prose treatment belongs on the grant's own page, which has room
-   for it.
+   **DECIDED 2026-08-15: do NOT change the type — constrain the prompt.**
+   Seventeen files reference these fields and `notifications.why_fit` is a
+   TEXT column, so `string[]` is a ~10-file refactor touching the ranker the
+   eval harness scores. Instead `rank.ts:139` ("write 1-2 sentences each for
+   whyFit…") becomes a demand for **2-3 short, self-contained sentences, each
+   able to stand alone as a bullet**. One line, reversible, and it makes the
+   splitter reliable on live output. Revisit `string[]` only if real ranker
+   output still splits badly. NOT YET APPLIED — scoped to the next pass, so
+   the change lands with an eval run rather than blind.
 
 2. **Profile confidence should be the agent's own read, not a stand-in.** The
    dossier's "Confidence: High/Medium/Low" badge is currently derived from
    `profileCompleteness()`, which measures how many fields are filled — not
    how much the extractor trusts what it pulled out. Those are different
    questions, and the meeting flagged this as something the AI agent will
-   evaluate. Wants a field on `CompanyProfile` or `MatchReport`, e.g.
-   `extractionConfidence: "high" | "medium" | "low"`. Re-point
-   `founder-dossier.tsx:confidence()` — one function — when it exists.
+   evaluate.
+
+   **DECIDED 2026-08-15: the extractor emits it.** `profile.ts` already knows
+   which facts the founder stated outright and which it inferred, which is
+   exactly the signal the badge wants and something no downstream heuristic
+   can reconstruct. Needs one field:
+
+   ```ts
+   extractionConfidence: "high" | "medium" | "low";   // on CompanyProfile
+   ```
+
+   This is a `types.ts` edit, so it is written here per CLAUDE.md and awaits
+   the go-ahead. When it lands, re-point `founder-dossier.tsx:confidence()` —
+   one function, deliberately isolated for this. NOT YET APPLIED.
 
 ## Difficulty bars are derived, and here is the weighting
 
@@ -134,6 +184,14 @@ is the most precision these inputs support.
   only consumer was the Screening page, which the 2026-08-15 meeting dropped.
 
 ## Still open
+
+- **Live SSE on the Dashboard.** See below.
+- **"Monitor" navigates but does not subscribe** (item 6 above).
+- **`/utah` and `/profile` are stubs** (item 7 above).
+- **Profile editability** — the meeting decided the profile is editable
+  throughout the product; today it is editable only through the interview
+  questions in Unlock Results.
+
 
 - Live SSE. `fixture.ts` is a real `UiReport`, so wiring the stream replaces
   one import and touches no component. The working intake → SSE → report flow

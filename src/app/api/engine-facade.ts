@@ -11,6 +11,7 @@ import type {
 } from "@/lib/types";
 import { runAnalysis as runPipeline } from "@/lib/engine/pipeline";
 import { getOpportunityById } from "@/lib/engine/retrieve";
+import { saveReportReasoning } from "@/lib/reasoning/db";
 
 export type Emit = (e: AnalyzeEvent) => void;
 
@@ -65,6 +66,11 @@ export function sseResponse(run: (emit: Emit) => Promise<UiMatchReport>): Respon
         controller.enqueue(enc.encode(`data: ${JSON.stringify(e)}\n\n`));
       try {
         const report = await run(emit);
+        // Persist why each opportunity matched, so the reasoning outlives the
+        // report that produced it and the opportunity's own page can show it.
+        // Best-effort by design: a storage failure must never cost a founder
+        // their scan, so it is logged inside and ignored here.
+        saveReportReasoning(report);
         emit({ type: "report", report });
       } catch (err) {
         console.error("engine pipeline failed:", err);

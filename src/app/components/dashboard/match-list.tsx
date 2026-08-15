@@ -210,7 +210,7 @@ export function MatchListHeader({
   liveCount,
 }: {
   state: MatchListState;
-  /** Programs currently monitored, counted in the DB. Null if ingest is cold. */
+  /** Programs open to applications today. Null if ingest is cold. */
   liveCount: number | null;
 }) {
   const {
@@ -236,8 +236,10 @@ export function MatchListHeader({
     <div className="app-pagehead">
       <h2 className="app-h3">Top Matches</h2>
       <div className="app-row" style={{ gap: 16 }}>
+        {/* "open now" not "live": the count excludes catalogue entries and
+            forecasts, so it means programs you could apply to today. */}
         <span className="app-label">
-          {liveCount != null ? `${liveCount.toLocaleString("en-US")} live · ` : ""}
+          {liveCount != null ? `${liveCount.toLocaleString("en-US")} open now · ` : ""}
           {rows.length} relevant
           {held.length ? ` · ${held.length} held` : ""}
         </span>
