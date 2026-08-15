@@ -173,19 +173,38 @@
   .mk-donehead:hover { color: var(--color-text-deep); }
   .mk-donehead .mk-opp__chev { margin-left: auto; }
 
-  /* List toolbar — belongs to the rail it controls, not the page header. */
-  .mk-railbar {
-    display: flex; justify-content: space-between; align-items: center;
-    gap: 12px; flex-wrap: wrap;
+  /* The one card on the page that ASKS something of you, rather than
+     reporting. Tinted with the kit's own primary-fixed wash (the same one
+     or-opp__head uses) so it separates without spending a new colour —
+     rule 1 keeps one blue, rule 2 keeps the status hues for status. */
+  .mk-ask {
+    background: rgba(205, 229, 255, .2);
+    border-color: var(--color-primary-container);
   }
-  .mk-filters { display: flex; gap: 8px; flex-wrap: wrap; }
+  .mk-ask .or-option { background: var(--color-surface-container-lowest); }
 
-  /* Mockup commentary lives BETWEEN cards, never crammed inside one. */
-  .mk-note-out {
-    display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
-    margin: -12px 0 0; padding: 0 4px;
-    font: 400 13px/18px var(--font-body); color: var(--color-on-surface-variant);
+  /* Icon-button popovers for filter and sort. Traditional list chrome:
+     the controls collapse to glyphs and open their options on demand. */
+  .mk-pop { position: relative; }
+  .mk-pop__menu {
+    position: absolute; right: 0; top: calc(100% + 6px); z-index: 40;
+    min-width: 232px; padding: 8px;
+    background: var(--color-surface-container-lowest);
+    border: 1px solid var(--color-border-ice);
+    border-radius: var(--radius-lg); box-shadow: var(--shadow-lg);
   }
+  .mk-pop__title {
+    margin: 4px 8px 8px; font: 500 12px/14px var(--font-label);
+    letter-spacing: .05em; text-transform: uppercase; color: var(--color-outline);
+  }
+  .mk-pop__row {
+    display: flex; align-items: center; gap: 10px; padding: 8px;
+    border-radius: var(--radius-default); cursor: pointer;
+    font: 400 14px/20px var(--font-body); color: var(--color-text-deep);
+  }
+  .mk-pop__row:hover { background: var(--color-surface-container-low); }
+  .mk-pop__row input { accent-color: var(--color-primary); }
+  .mk-pop__row span:nth-of-type(1) { flex: 1; }
 
   .mk-h3 { margin: 0; font: 600 24px/32px var(--font-headline); color: var(--color-text-deep); }
   .mk-h4 { margin: 0 0 24px; font: 600 20px/28px var(--font-headline); color: var(--color-text-deep); }
@@ -234,7 +253,32 @@
 <main class="mk-page" id="screen-map" role="tabpanel" aria-label="Opportunity Map">
     <div class="mk-pagehead">
     <h2 class="mk-h3">Top Matches</h2>
-    <span class="mk-label">1,703 live · 412 relevant awards</span>
+    <div class="mk-row" style="gap:16px">
+      <span class="mk-label">1,703 live · 412 relevant awards</span>
+      <div class="mk-row" style="gap:4px">
+        <div class="mk-pop">
+          <button class="or-iconbtn" id="filter-btn" aria-haspopup="true" aria-expanded="false" aria-controls="filter-menu" aria-label="Filter matches"><span class="material-symbols-outlined" aria-hidden="true">filter_list</span></button>
+          <div class="mk-pop__menu" id="filter-menu" role="group" aria-label="Filter by fit tier" hidden>
+            <p class="mk-pop__title">Show</p>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Likely fit</span><span class="mk-num">4</span></label>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Verify eligibility</span><span class="mk-num">5</span></label>
+            <label class="mk-pop__row"><input type="checkbox" checked /><span>Adjacent</span><span class="mk-num">2</span></label>
+            <label class="mk-pop__row"><input type="checkbox" /><span>Held — missing data</span><span class="mk-num">2</span></label>
+            <label class="mk-pop__row"><input type="checkbox" /><span>Blocked</span><span class="mk-num">3</span></label>
+          </div>
+        </div>
+        <div class="mk-pop">
+          <button class="or-iconbtn" id="sort-btn" aria-haspopup="true" aria-expanded="false" aria-controls="sort-menu" aria-label="Sort matches"><span class="material-symbols-outlined" aria-hidden="true">swap_vert</span></button>
+          <div class="mk-pop__menu" id="sort-menu" role="group" aria-label="Sort order" hidden>
+            <p class="mk-pop__title">Order by</p>
+            <label class="mk-pop__row"><input type="radio" name="sort" checked /><span>Best fit</span></label>
+            <label class="mk-pop__row"><input type="radio" name="sort" /><span>Deadline soonest</span></label>
+            <label class="mk-pop__row"><input type="radio" name="sort" /><span>Largest award</span></label>
+          </div>
+        </div>
+        <button class="or-iconbtn" id="toggle-all" aria-label="Collapse all matches" title="Collapse all"><span class="material-symbols-outlined" aria-hidden="true">unfold_less</span></button>
+      </div>
+    </div>
   </div>
 
   <div class="mk-grid">
@@ -295,25 +339,10 @@
           </div>
         </div>
       </div>
-      <p class="mk-note-out">Work <b>you</b> do — tick it off.<span class="mk-anno">TaskRow</span></p>
     </div>
 
     <!-- span 6 — Top Matches -->
     <div class="mk-c6">
-
-      <div class="mk-railbar">
-        <div class="mk-filters" role="group" aria-label="Filter matches">
-          <button class="or-btn or-btn--tonal or-btn--sm or-btn--pill" aria-pressed="true">All 11</button>
-          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Likely fit 4</button>
-          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Verify 5</button>
-          <button class="or-btn or-btn--outline or-btn--sm or-btn--pill" aria-pressed="false">Held 2</button>
-        </div>
-        <div class="mk-row" style="gap:8px">
-          <label class="mk-vh" for="sort">Sort matches</label>
-          <select id="sort" class="or-btn or-btn--outline or-btn--sm" style="padding:6px 10px"><option>Best fit</option><option>Deadline soonest</option><option>Largest award</option></select>
-          <button class="or-btn or-btn--text or-btn--sm" id="toggle-all">Collapse all</button>
-        </div>
-      </div>
 
       <article class="or-opp" data-expanded="true">
         <button class="mk-opp__toggle" aria-expanded="true" aria-controls="opp-nsf-body">
@@ -419,7 +448,7 @@
 
     <!-- span 3 — UnlockResults, the canonical right rail -->
     <div class="mk-c3">
-      <div class="or-card">
+      <div class="or-card mk-ask">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -440,7 +469,6 @@
         </div>
         </div>
       </div>
-      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -511,7 +539,7 @@
     </div>
 
     <div class="mk-c3">
-      <div class="or-card">
+      <div class="or-card mk-ask">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Two required basics are missing, so ranking is held. Early numbers inflate and then collapse — we'd rather wait.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -532,7 +560,6 @@
         </div>
         </div>
       </div>
-      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -618,7 +645,7 @@
     </div>
 
     <div class="mk-c3">
-      <div class="or-card">
+      <div class="or-card mk-ask">
         <h4 style="margin:0 0 8px;font:600 20px/28px var(--font-headline);color:var(--color-text-deep);display:flex;align-items:center;gap:8px"><span class="material-symbols-outlined" style="color:var(--color-primary)" aria-hidden="true">key</span>Unlock Results</h4>
         <p style="margin:0 0 24px;font:400 14px/20px var(--font-body);color:var(--color-on-surface-variant)">Clarify ownership to reveal 14 hidden opportunities and confirm SBIR eligibility.</p>
         <div style="display:flex;flex-direction:column;gap:12px">
@@ -639,7 +666,6 @@
         </div>
         </div>
       </div>
-      <p class="mk-note-out">Dates the world sets — you meet them or miss them.<span class="mk-anno">Timeline · engine/timeline.ts</span></p>
     </div>
   </div>
 </main>
@@ -811,13 +837,39 @@
   const toggleAll = document.getElementById("toggle-all");
   toggleAll.addEventListener("click", () => {
     const cards = [...document.querySelectorAll("#screen-map .or-opp")];
-    const open = toggleAll.textContent.trim() === "Expand all";
+    const open = toggleAll.dataset.state === "collapsed";
     for (const c of cards) {
       c.dataset.expanded = String(open);
       c.querySelector(".mk-opp__toggle").setAttribute("aria-expanded", String(open));
     }
-    toggleAll.textContent = open ? "Collapse all" : "Expand all";
+    toggleAll.dataset.state = open ? "expanded" : "collapsed";
+    toggleAll.querySelector("span").textContent = open ? "unfold_less" : "unfold_more";
+    const label = open ? "Collapse all matches" : "Expand all matches";
+    toggleAll.setAttribute("aria-label", label);
+    toggleAll.title = open ? "Collapse all" : "Expand all";
   });
+
+  // Popovers: one open at a time, dismissed by outside click or Escape.
+  const pops = [["filter-btn","filter-menu"],["sort-btn","sort-menu"]].map(([b,m]) =>
+    [document.getElementById(b), document.getElementById(m)]);
+  function closePops(except) {
+    for (const [btn, menu] of pops) {
+      if (menu === except) continue;
+      menu.hidden = true; btn.setAttribute("aria-expanded", "false");
+    }
+  }
+  for (const [btn, menu] of pops) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const open = menu.hidden;
+      closePops(open ? menu : null);
+      menu.hidden = !open;
+      btn.setAttribute("aria-expanded", String(open));
+    });
+    menu.addEventListener("click", (e) => e.stopPropagation());
+  }
+  document.addEventListener("click", () => closePops(null));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePops(null); });
 
   const doneHead = document.getElementById("done-head"), doneList = document.getElementById("done-list");
   doneHead.addEventListener("click", () => {
