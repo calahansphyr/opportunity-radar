@@ -392,6 +392,34 @@ pre {
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 }
 
+/* --- Difficulty bars -------------------------------------------------------
+   Signal-strength bars for the 1-3 effort estimate on a match card. Brand
+   blue, never red: rule 2 keeps red for deadlines, alerts and failures, and a
+   hard grant is none of those. See dashboard/difficulty.ts for the weighting. */
+.app-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
+}
+.app-bars > span {
+  width: 3px;
+  border-radius: 1px;
+  background: var(--color-outline-variant);
+}
+.app-bars > span:nth-child(1) {
+  height: 40%;
+}
+.app-bars > span:nth-child(2) {
+  height: 70%;
+}
+.app-bars > span:nth-child(3) {
+  height: 100%;
+}
+.app-bars > span[data-on="true"] {
+  background: var(--color-primary);
+}
+
 /* --- Task rows ------------------------------------------------------------
    ONE completion control. A square checkbox everywhere; "current" is
    expressed by the row (spine + tint), never by a different control shape.

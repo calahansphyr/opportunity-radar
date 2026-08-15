@@ -67,6 +67,33 @@ export function urgencyLabel(today: string, iso: string | null): string | null {
 }
 
 /**
+ * Split a prose field into bullets, one per sentence.
+ *
+ * `RankedMatch.whyFit` and its siblings are single strings, but the Dashboard
+ * shows bullets: three short lines scan in about two seconds where three
+ * paragraphs do not, and the Dashboard's job is triage. The fuller prose
+ * belongs on the grant's own page.
+ *
+ * The lookahead requires a capital after the boundary, so "U.S. citizens" and
+ * "SAM.gov registration" stay in one piece. `max` is a safety valve, not a
+ * house style — the ranked copy is authored at 2-3 sentences a field, so
+ * nothing is silently dropped in practice.
+ *
+ * The real fix is `RankedMatch` carrying `string[]`. That is a types.ts
+ * change, so it is written up in NOTES-dashboard.md rather than made here.
+ */
+export function toBullets(text: string, max = 4): string[] {
+  if (!text?.trim()) return [];
+  return text
+    .replace(/\s+/g, " ")
+    .trim()
+    .split(/(?<=[.!?])\s+(?=[A-Z(])/)
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+/**
  * Trim to a word boundary with an ellipsis. Federal titles run to 150+
  * characters ("NSF Small Business Innovation Research / Small Business
  * Technology Transfer Phase I, Phase II, Fast-Track Programs: A Pilot

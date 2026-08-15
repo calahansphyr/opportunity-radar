@@ -60,6 +60,49 @@ known-wrong and are listed so nobody has to rediscover them.
    that are out of scope for this build. They render an honest "not built yet"
    card so the primary nav has no 404s.
 
+## Type changes this module wants (per CLAUDE.md, proposed not made)
+
+1. **`RankedMatch` should carry `string[]`, not `string`.** The Dashboard
+   renders `whyFit` / `whatCouldDisqualify` / `whatToVerify` as bullets —
+   three short lines scan where three paragraphs do not, and triage is the
+   page's job. Today `format.ts:toBullets()` splits the string on sentence
+   boundaries, and the fixture copy is authored as 2-3 short self-contained
+   sentences so the split lands cleanly. That is a workaround. The real fix:
+
+   ```ts
+   whyFit: string[];              // was: string
+   whatCouldDisqualify: string[];
+   whatToVerify: string[];
+   ```
+
+   Until then, `rank.ts`'s prompt should ask for short, self-contained
+   sentences, or the splitter will produce fragments on live output. The
+   longer prose treatment belongs on the grant's own page, which has room
+   for it.
+
+2. **Profile confidence should be the agent's own read, not a stand-in.** The
+   dossier's "Confidence: High/Medium/Low" badge is currently derived from
+   `profileCompleteness()`, which measures how many fields are filled — not
+   how much the extractor trusts what it pulled out. Those are different
+   questions, and the meeting flagged this as something the AI agent will
+   evaluate. Wants a field on `CompanyProfile` or `MatchReport`, e.g.
+   `extractionConfidence: "high" | "medium" | "low"`. Re-point
+   `founder-dossier.tsx:confidence()` — one function — when it exists.
+
+## Difficulty bars are derived, and here is the weighting
+
+The match-card footer shows a 1-3 effort estimate as signal bars, replacing
+the mock's "Estimated prep time: 120 hours" (no field supports an hour count).
+`dashboard/difficulty.ts` scores: competition from
+`expectedAwards / expectedApplications` (+2 under 1-in-8, +1 under ~1-in-3),
+`kind` (+1 for sbir_sttr, +1 for cooperative_agreement), SAM.gov not yet
+registered (+1), and closing within 30 days (+1). Totals of 0-1 / 2-3 / 4+ map
+to levels 1 / 2 / 3. Bars fill in brand blue, never red — rule 2 keeps red for
+deadlines, alerts and failures, and a hard grant is none of those.
+
+It is deliberately a 1-3 band rather than a percentage or an hour count: that
+is the most precision these inputs support.
+
 ## Decisions worth not re-litigating
 
 - **Match cards do not use the kit's `<OpportunityCard/>`.** `RankedMatch`

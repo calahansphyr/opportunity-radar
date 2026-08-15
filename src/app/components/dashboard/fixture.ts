@@ -231,9 +231,18 @@ export const FIXTURE_OPPORTUNITIES: Record<string, Opportunity> = {
 };
 
 /* -------------------------------------------------------------------------- */
-/* Ranked matches. whyFit / whatCouldDisqualify / whatToVerify / nextSteps are */
-/* single prose paragraphs on the real type, and render as prose — hidden by   */
-/* default, expanded on click (team decision, 2026-08-15).                     */
+/* Ranked matches.                                                            */
+/*                                                                            */
+/* whyFit / whatCouldDisqualify / whatToVerify are single strings on the real  */
+/* type. The Dashboard renders them as BULLETS, one per sentence, because its  */
+/* job is triage and three short lines scan where three paragraphs do not      */
+/* (team decision, 2026-08-15; hidden until the card is expanded). The fuller  */
+/* treatment belongs on the grant's own page.                                  */
+/*                                                                            */
+/* So each field is authored as 2-3 SHORT, self-contained sentences: each one  */
+/* has to stand alone as a bullet, and read as a paragraph when joined. Keep   */
+/* that shape when the live ranker takes over — the prompt should ask for it,  */
+/* and `RankedMatch` should really carry string[] (see NOTES-dashboard.md).    */
 
 const MATCHES: RankedMatch[] = [
   {
@@ -241,67 +250,54 @@ const MATCHES: RankedMatch[] = [
     tier: "likely_fit",
     score: 91,
     whyFit:
-      "This solicitation describes your product almost word for word: it names documentation " +
-      "automation, shift handoff support and compliance reporting for hospital systems as the " +
-      "work it wants to fund. The $250K-$314K award band sits inside the $500K-$2M you are " +
-      "raising as the first of two or three non-dilutive sources, and at 15 people and $1M ARR " +
-      "you clear the small-business test with room to spare.",
+      "The notice names documentation automation, shift handoff and compliance reporting as the " +
+      "work it funds. The $250K-$314K band sits inside your $500K-$2M raise. " +
+      "At 15 people and $1M ARR you clear the small-business test with room to spare.",
     whatCouldDisqualify:
-      "The eligibility text requires the company be majority US-owned, and you have raised $2.5M " +
-      "in venture funding without telling us the resulting ownership split — that single unknown " +
-      "is what is holding this award. SBIR also funds technical risk rather than product " +
-      "engineering, so a proposal that reads as building more SaaS features will be declined on " +
-      "merit even once eligibility clears.",
+      "Eligibility requires majority US ownership, and your $2.5M venture raise leaves that " +
+      "unresolved. SBIR funds technical risk, not product engineering — a features roadmap gets " +
+      "declined on merit even once eligibility clears.",
     whatToVerify:
-      "Confirm the ownership split against the SBIR definition, which counts affiliates and " +
-      "looks through holding structures, and check whether your SAM.gov registration is active " +
-      "rather than merely created — the December close leaves time, but only just.",
+      "Confirm the ownership split against the SBIR definition, which counts affiliates. " +
+      "Check that your SAM.gov registration is active, not merely created.",
     nextSteps:
-      "Resolve the ownership question first; every other program on this page is waiting on the " +
-      "same answer.",
+      "Resolve ownership first — every other program on this page is waiting on the same answer.",
   },
   {
     opportunityId: NSF_SBIR,
     tier: "likely_fit",
     score: 78,
     whyFit:
-      "NSF's SBIR is the largest non-dilutive pool open to a company at your stage, with 86 " +
-      "expected awards against roughly 250 proposals — much better odds than the NIH route. " +
-      "Your deployed hospital pilots are exactly the commercial-potential evidence NSF Phase I " +
-      "reviewers look for, and a $40M pool across 86 awards implies an award size near the " +
-      "middle of your stated need.",
+      "86 expected awards against roughly 250 proposals is the best ratio on this page. " +
+      "Deployed hospital pilots are the commercial-potential evidence Phase I reviewers want. " +
+      "A $40M pool across 86 awards implies an award near the middle of your stated need.",
     whatCouldDisqualify:
-      "This particular solicitation carries a pilot emphasis on scientific instrumentation, " +
-      "which your platform is not — you would be applying against the emphasis rather than with " +
-      "it. Phase I is also invitation-only: without an accepted Project Pitch you cannot submit " +
-      "at all, and NSF caps pitches at two per company per year.",
+      "This solicitation's pilot emphasis is scientific instrumentation, which your platform is " +
+      "not. Phase I is invitation-only — no accepted Project Pitch, no submission. " +
+      "NSF caps pitches at two per company per year.",
     whatToVerify:
-      "Check whether the general NSF SBIR solicitation, without the instrumentation emphasis, is " +
-      "open on a parallel deadline — that is likely the better door. Then confirm your Project " +
-      "Pitch has not already been spent this year.",
+      "Check whether the general NSF SBIR solicitation is open on a parallel deadline; that is " +
+      "likely the better door. Confirm your Project Pitch allowance has not been spent this year.",
     nextSteps:
-      "Submit a 3-page Project Pitch. NSF only invites full proposals from pitches it likes, so " +
-      "this is the deadline that actually binds.",
+      "Submit a 3-page Project Pitch — that is the deadline that actually binds.",
   },
   {
     opportunityId: NIH_PARENT,
     tier: "verify_eligibility",
     score: 62,
     whyFit:
-      "The parent SBIR is the standing door into NIH rather than a themed call, so it stays open " +
-      "long after the targeted solicitations close — an April 2027 deadline gives you a fallback " +
-      "if the December NIH round does not land. Health IT for the nursing workforce is squarely " +
-      "within the assistance listings this opportunity draws on.",
+      "The parent SBIR is the standing door into NIH, open long after themed calls close. " +
+      "An April 2027 deadline is a real fallback if the December round misses. " +
+      "Health IT for the nursing workforce sits inside the assistance listings this draws on.",
     whatCouldDisqualify:
-      "The same US-ownership requirement applies and is still unanswered. Beyond that, the parent " +
-      "announcement publishes no award ceiling and no expected award count, so we cannot tell you " +
-      "what a realistic ask is — the institute-level guidance decides that, not this notice.",
+      "The same US-ownership requirement applies and is still unanswered. " +
+      "No award ceiling and no expected award count are published, so we cannot tell you what a " +
+      "realistic ask is.",
     whatToVerify:
-      "Identify which NIH institute would own your application, since the parent SBIR routes " +
-      "through institute-specific budgets and priorities, and get its current Phase I ceiling " +
-      "before you build a budget.",
+      "Identify which NIH institute would own the application — the parent SBIR routes through " +
+      "institute budgets. Get that institute's current Phase I ceiling before building a budget.",
     nextSteps:
-      "Contact SEEDinfo@nih.gov and ask which institute should receive a nursing-documentation " +
+      "Email SEEDinfo@nih.gov and ask which institute should receive a nursing-documentation " +
       "application.",
   },
 ];

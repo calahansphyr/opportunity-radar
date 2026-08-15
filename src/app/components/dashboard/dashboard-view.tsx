@@ -103,7 +103,7 @@ export default function DashboardView({
         </div>
 
         <div className="app-c6">
-          <MatchList state={state} report={report} today={today} />
+          <MatchList state={state} report={report} profile={profile} today={today} />
         </div>
 
         <div className="app-c3" id="unlock">

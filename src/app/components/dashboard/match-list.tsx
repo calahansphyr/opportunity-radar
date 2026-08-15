@@ -18,7 +18,13 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Badge, Button, Card, IconButton } from "@/app/components/ui";
-import type { FitTier, GatedOpportunity, Opportunity, RankedMatch } from "@/lib/types";
+import type {
+  CompanyProfile,
+  FitTier,
+  GatedOpportunity,
+  Opportunity,
+  RankedMatch,
+} from "@/lib/types";
 import { TIERS } from "../shared";
 import type { UiReport } from "../shared";
 import MatchCard from "./match-card";
@@ -48,6 +54,13 @@ export interface MatchListState {
   toggleCard: (id: string) => void;
   openPop: string | null;
   setOpenPop: (id: string | null) => void;
+  /** Gate-unknown entries — shown by default, filterable like a tier. */
+  showHeld: boolean;
+  setShowHeld: (show: boolean) => void;
+  /** Hard-failed entries. Never shown by default; they are dead ends. */
+  blocked: GatedOpportunity[];
+  showBlocked: boolean;
+  setShowBlocked: (show: boolean) => void;
 }
 
 export function useMatchList(report: UiReport): MatchListState {
@@ -62,6 +75,10 @@ export function useMatchList(report: UiReport): MatchListState {
   const [hidden, setHidden] = useState<Set<FitTier>>(() => new Set());
   const [sort, setSort] = useState<SortKey>("fit");
   const [openPop, setOpenPop] = useState<string | null>(null);
+  const [showHeld, setShowHeld] = useState(true);
+  // Off by default: a hard-failed programme is a dead end, and the product's
+  // honesty is in saying so on request rather than padding the list with it.
+  const [showBlocked, setShowBlocked] = useState(false);
   const [expanded, setExpanded] = useState<Set<string>>(
     () => new Set(rows.length ? [rows[0].opportunityId] : []),
   );
@@ -129,6 +146,12 @@ export function useMatchList(report: UiReport): MatchListState {
     sorted,
     // Entries the ranker could not score because a gate is unknown.
     held: report.rejected.filter((r) => r.verdict === "unknown"),
+    showHeld,
+    setShowHeld,
+    // Entries that hard-failed a gate. Not a maybe — a no.
+    blocked: report.rejected.filter((r) => r.verdict === "fail"),
+    showBlocked,
+    setShowBlocked,
     tiersPresent: TIERS.filter((t) => rows.some((m) => m.tier === t.tier)),
     hidden,
     toggleTier,
@@ -190,8 +213,24 @@ export function MatchListHeader({
   /** Programs currently monitored, counted in the DB. Null if ingest is cold. */
   liveCount: number | null;
 }) {
-  const { rows, held, tiersPresent, hidden, toggleTier, sort, setSort, allOpen, toggleAll, openPop, setOpenPop } =
-    state;
+  const {
+    rows,
+    held,
+    blocked,
+    tiersPresent,
+    hidden,
+    toggleTier,
+    sort,
+    setSort,
+    allOpen,
+    toggleAll,
+    openPop,
+    setOpenPop,
+    showHeld,
+    setShowHeld,
+    showBlocked,
+    setShowBlocked,
+  } = state;
 
   return (
     <div className="app-pagehead">
@@ -222,6 +261,28 @@ export function MatchListHeader({
                 <span className="app-num">{rows.filter((m) => m.tier === t.tier).length}</span>
               </label>
             ))}
+            {held.length ? (
+              <label className="app-pop__row">
+                <input
+                  type="checkbox"
+                  checked={showHeld}
+                  onChange={() => setShowHeld(!showHeld)}
+                />
+                <span>Held — missing data</span>
+                <span className="app-num">{held.length}</span>
+              </label>
+            ) : null}
+            {blocked.length ? (
+              <label className="app-pop__row">
+                <input
+                  type="checkbox"
+                  checked={showBlocked}
+                  onChange={() => setShowBlocked(!showBlocked)}
+                />
+                <span>Blocked</span>
+                <span className="app-num">{blocked.length}</span>
+              </label>
+            ) : null}
           </Popover>
 
           <Popover
@@ -262,13 +323,17 @@ export function MatchListHeader({
 export default function MatchList({
   state,
   report,
+  profile,
   today,
 }: {
   state: MatchListState;
   report: UiReport;
+  /** Live profile (report profile + this session's answers). */
+  profile: CompanyProfile;
   today: string;
 }) {
-  const { sorted, rows, held, opportunities, expanded, toggleCard } = state;
+  const { sorted, rows, held, blocked, opportunities, expanded, toggleCard, showHeld, showBlocked } =
+    state;
 
   return (
     <>
@@ -277,6 +342,7 @@ export default function MatchList({
           key={m.opportunityId}
           match={m}
           opportunity={opportunities[m.opportunityId]}
+          profile={profile}
           evidence={report.evidence?.[m.opportunityId]}
           today={today}
           expanded={expanded.has(m.opportunityId)}
@@ -299,31 +365,37 @@ export default function MatchList({
         </Card>
       ) : null}
 
-      {held.map((h) => (
-        <HeldCard key={h.opportunity.id} held={h} />
-      ))}
+      {showHeld ? held.map((h) => <HeldCard key={h.opportunity.id} entry={h} />) : null}
+      {showBlocked
+        ? blocked.map((h) => <HeldCard key={h.opportunity.id} entry={h} blocked />)
+        : null}
     </>
   );
 }
 
-/** An opportunity we refuse to rank until a gate is answered — the honest
- *  alternative to guessing, and the reason the right rail exists. */
-function HeldCard({ held }: { held: GatedOpportunity }) {
-  const reason = held.gates.find((g) => g.verdict === "unknown")?.detail ?? "";
+/** An opportunity we refuse to rank, either because a gate is unknown (held —
+ *  answerable, so it offers Resolve) or because one hard-failed (blocked — a
+ *  no, and nothing to resolve). Saying so is the honest alternative to
+ *  quietly dropping it, and the reason the right rail exists. */
+function HeldCard({ entry, blocked = false }: { entry: GatedOpportunity; blocked?: boolean }) {
+  const reason =
+    entry.gates.find((g) => g.verdict === (blocked ? "fail" : "unknown"))?.detail ?? "";
   return (
     <Card>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 4, flexWrap: "wrap" }}>
-            <Badge tone="caution">Uncertain eligibility</Badge>
+            <Badge tone={blocked ? "danger" : "caution"}>
+              {blocked ? "Not eligible" : "Uncertain eligibility"}
+            </Badge>
             <span className="app-label">
-              {held.opportunity.alnNumbers[0]
-                ? `ALN ${held.opportunity.alnNumbers[0]}`
-                : held.opportunity.id}
+              {entry.opportunity.alnNumbers[0]
+                ? `ALN ${entry.opportunity.alnNumbers[0]}`
+                : entry.opportunity.id}
             </span>
           </div>
           <h4 style={{ margin: 0, font: "600 18px/26px var(--font-headline)", color: "var(--color-text-deep)" }}>
-            {held.opportunity.title}
+            {entry.opportunity.title}
           </h4>
           <p
             style={{
@@ -333,18 +405,20 @@ function HeldCard({ held }: { held: GatedOpportunity }) {
               color: "var(--color-on-surface-variant)",
             }}
           >
-            {held.opportunity.agency}. {reason}.
+            {entry.opportunity.agency}. {reason}.
           </p>
         </div>
-        <Button
-          variant="text"
-          iconAfter="edit"
-          onClick={() =>
-            document.getElementById("unlock")?.scrollIntoView({ behavior: "smooth", block: "center" })
-          }
-        >
-          Resolve
-        </Button>
+        {blocked ? null : (
+          <Button
+            variant="text"
+            iconAfter="edit"
+            onClick={() =>
+              document.getElementById("unlock")?.scrollIntoView({ behavior: "smooth", block: "center" })
+            }
+          >
+            Resolve
+          </Button>
+        )}
       </div>
     </Card>
   );

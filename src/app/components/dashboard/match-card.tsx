@@ -24,8 +24,10 @@ import { Badge, Icon } from "@/app/components/ui";
 import type { BadgeTone } from "@/app/components/ui";
 import type { EvidenceSummary, FitTier, Opportunity, RankedMatch } from "@/lib/types";
 import { oddsLabel } from "@/lib/engine/timeline";
+import type { CompanyProfile } from "@/lib/types";
 import { TIERS, fmtUsd } from "../shared";
-import { fmtDeadline, urgencyLabel } from "./format";
+import { elide, fmtDeadline, toBullets, urgencyLabel } from "./format";
+import { difficultyOf } from "./difficulty";
 
 /** Kit badge tone per tier. Labels come from TIERS so the two never drift. */
 const TONE: Record<FitTier, BadgeTone> = {
@@ -39,7 +41,8 @@ function tierLabel(tier: FitTier): string {
   return TIERS.find((t) => t.tier === tier)?.label ?? "Not a fit";
 }
 
-/** One explanation column. Prose, not bullets — the type gives paragraphs. */
+/** One explanation column, as bullets — the Dashboard triages, it doesn't
+ *  brief. The source field is one string; see `toBullets`. */
 function Column({
   icon,
   title,
@@ -51,28 +54,42 @@ function Column({
   color?: string;
   children: string;
 }) {
-  if (!children?.trim()) return null;
+  const points = toBullets(children);
+  if (!points.length) return null;
   return (
     <div>
       <h5 className="or-opp__h5" style={color ? { color } : undefined}>
         <Icon name={icon} size={18} color={color ?? "var(--color-primary)"} aria-hidden /> {title}
       </h5>
-      <p
-        style={{
-          margin: 0,
-          font: "400 var(--text-body-sm-size)/var(--text-body-sm-line) var(--font-body)",
-          color: "var(--color-on-surface-variant)",
-        }}
-      >
-        {children}
-      </p>
+      <ul className="or-opp__list">
+        {points.map((p) => (
+          <li key={p}>{p}</li>
+        ))}
+      </ul>
     </div>
+  );
+}
+
+/** Signal-strength bars: 1 low, 3 high. Brand blue — hard is not a failure. */
+function DifficultyBars({ level, label, why }: { level: 1 | 2 | 3; label: string; why: string }) {
+  return (
+    <span
+      className="app-bars"
+      role="img"
+      aria-label={`Difficulty ${level} of 3, ${label}. ${why}`}
+      title={why}
+    >
+      <span data-on={level >= 1} />
+      <span data-on={level >= 2} />
+      <span data-on={level >= 3} />
+    </span>
   );
 }
 
 export default function MatchCard({
   match,
   opportunity,
+  profile,
   evidence,
   today,
   expanded,
@@ -80,6 +97,8 @@ export default function MatchCard({
 }: {
   match: RankedMatch;
   opportunity: Opportunity;
+  /** Difficulty depends on the founder too — SAM.gov status, mainly. */
+  profile: CompanyProfile;
   evidence?: EvidenceSummary;
   today: string;
   expanded: boolean;
@@ -96,6 +115,7 @@ export default function MatchCard({
   const twin = evidence?.similarAwards?.[0];
   // Real odds from real counts, or nothing at all. Never an estimate.
   const odds = oddsLabel(opportunity.expectedAwards, opportunity.expectedApplications);
+  const difficulty = difficultyOf(opportunity, profile, today);
 
   return (
     <article className="or-opp" data-expanded={expanded}>
@@ -138,7 +158,11 @@ export default function MatchCard({
             <Icon name="expand_more" size={24} className="app-opp__chev" aria-hidden />
           </div>
         </div>
-        {opportunity.description ? <p className="or-opp__lede">{opportunity.description}</p> : null}
+        {/* Elided: the notice's own summary runs long, and the Dashboard's
+            job is triage. Full text is on the grant's page. */}
+        {opportunity.description ? (
+          <p className="or-opp__lede">{elide(opportunity.description, 190)}</p>
+        ) : null}
       </div>
 
       <div className="or-opp__body app-opp__body" id={bodyId}>
@@ -242,8 +266,19 @@ export default function MatchCard({
           full program detail plus the pursuit panel, which is what the
           2026-08-15 meeting meant by routing into Funding. */}
       <div className="or-opp__foot">
-        <span className="or-opp__meta" style={{ color: "var(--color-on-surface-variant)", marginLeft: 8 }}>
-          {odds ?? `Match score ${match.score}/100`}
+        <span
+          className="or-opp__meta"
+          style={{
+            color: "var(--color-on-surface-variant)",
+            marginLeft: 8,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+          }}
+        >
+          <DifficultyBars {...difficulty} />
+          {difficulty.label}
+          {odds ? ` · ${odds}` : ""}
         </span>
         <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
           <Link className="or-btn or-btn--outline" href="/radar">

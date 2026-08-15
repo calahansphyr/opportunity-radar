@@ -9,44 +9,51 @@
 // `.or-meter`) — the kit pinned a 4px ProgressBar to the top edge, where it
 // reads as card trim rather than as data.
 //
-// Two deliberate departures from the kit screen, both about rule 5 (one
-// shout per region) in a 3-column rail:
+// The four fact rows are the mock's four: Industry, ARR, Raised, Ownership.
+// Raised earns its place — a $2.5M venture raise is the fact the whole SBIR
+// ownership question hangs on.
 //
-//   - The kit's "Confidence: Medium" badge is GONE. It was the completeness
-//     score said a second time, in words, directly above the same score in
-//     numerals. The meter states it once, exactly.
-//   - Four fact rows, not six. The rail is ~280px wide; every extra row is
-//     another thing competing with the number at the foot. The four kept are
-//     the ones the matches below actually turn on.
+// CONFIDENCE BADGE: derived from `profileCompleteness` for now, which is a
+// stand-in. It is meant to be the AI agent's own read on how much it trusts
+// this profile, and there is no field for that yet — adding one is a
+// types.ts change, so it is written up in NOTES-dashboard.md rather than
+// made here. `confidence()` below is the single place to re-point when the
+// agent supplies it.
 //
 // The unknown rows are BUTTONS. They pulse red to say "this is blocking
 // money", which is an invitation to click, and a pulse that does nothing when
 // you click it is a broken promise — they scroll to the card that asks.
 
-import { Avatar, Card, KeyValueRow } from "@/app/components/ui";
+import { Avatar, Badge, Card, KeyValueRow } from "@/app/components/ui";
 import type { CompanyProfile } from "@/lib/types";
 import { profileCompleteness } from "@/lib/monitor/completeness";
 import { fmtUsd } from "../shared";
 import { initialsOf, locationLabel } from "./format";
 
-/** The four facts the matches below actually turn on. */
+/** The mock's four facts — the ones the matches below actually turn on. */
 function rows(p: CompanyProfile): { label: string; value: string; unknown: boolean }[] {
   return [
     { label: "Industry", value: p.industry ?? "Unknown", unknown: p.industry == null },
     { label: "ARR", value: fmtUsd(p.annualRevenueUsd), unknown: p.annualRevenueUsd == null },
+    { label: "Raised", value: fmtUsd(p.capitalRaisedUsd), unknown: p.capitalRaisedUsd == null },
     {
       label: "Ownership",
       value:
         p.majorityUsOwned == null ? "Unknown" : p.majorityUsOwned ? ">50% US" : "Not majority US",
       unknown: p.majorityUsOwned == null,
     },
-    {
-      label: "SAM.gov",
-      value:
-        p.samRegistered == null ? "Unknown" : p.samRegistered ? "Registered" : "Not registered",
-      unknown: p.samRegistered == null,
-    },
   ];
+}
+
+/**
+ * How much the agent trusts this profile. STAND-IN: derived from profile
+ * completeness until the agent emits its own confidence — see the file
+ * header. Re-point this one function, not the component.
+ */
+function confidence(score: number): { label: string; tone: "fit" | "caution" | "danger" } {
+  if (score >= 0.85) return { label: "Confidence: High", tone: "fit" };
+  if (score >= 0.6) return { label: "Confidence: Medium", tone: "caution" };
+  return { label: "Confidence: Low", tone: "danger" };
 }
 
 function scrollToUnlock() {
@@ -63,6 +70,7 @@ export default function FounderDossier({
 }) {
   const completeness = profileCompleteness(profile);
   const pct = Math.round(completeness.score * 100);
+  const conf = confidence(completeness.score);
   const facts = rows(profile);
   const unknowns = facts.filter((f) => f.unknown);
   const place = locationLabel(profile.location);
@@ -105,6 +113,14 @@ export default function FounderDossier({
           {place}
         </span>
       ) : null}
+
+      <Badge
+        tone={conf.tone}
+        icon="info"
+        style={{ width: "100%", justifyContent: "center", marginBottom: sample ? 12 : 24 }}
+      >
+        {conf.label}
+      </Badge>
 
       {sample ? (
         <a className="app-sample" href="/analyze">
