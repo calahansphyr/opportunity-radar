@@ -424,6 +424,18 @@
   --color-outline: #5c6570;
 }
 
+/* Deviation 5: the kit assumes a border-box reset it never ships — it sets
+   box-sizing on five individual rules and relies on the host for the rest.
+   In this app Tailwind's preflight provides it, so this is a no-op here; for
+   any standalone consumer it is the difference between a working nav and one
+   whose right-hand group is clipped, because .or-nav is width:100% PLUS 64px
+   of side padding. The kit has to stand on its own. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .or-btn:focus-visible,
 .or-iconbtn:focus-visible,
 .or-nav__link:focus-visible,

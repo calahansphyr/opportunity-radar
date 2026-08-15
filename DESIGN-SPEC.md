@@ -62,7 +62,7 @@ mapping table is the `@theme` block at the top of `globals.css`.
 
 ## Deviations from the upstream bundle
 
-Four, all deliberate and all commented in place:
+Five, all deliberate and all commented in place:
 
 1. `@font-face` blocks dropped — `next/font/google` loads Hanken Grotesk, Inter
    and JetBrains Mono in `layout.tsx`, so `--font-*` is rebound to the
@@ -80,6 +80,13 @@ Four, all deliberate and all commented in place:
    buttons, nav rows and option cards, which the kit styled only on
    `.or-field`. `globals.css` already gave the app the last two — the kit
    needs them to stand alone.
+
+5. A global `box-sizing: border-box` reset. The kit sets `box-sizing` on
+   only five rules and assumes the host supplies the rest — Tailwind's
+   preflight does here, so this is a no-op in the app. Without it `.or-nav`
+   (`width:100%` plus 64px side padding) overflows its container and clips
+   the right-hand nav group. Anything loading `catalyst-kit.css` outside
+   this app depends on it.
 
 ## Re-syncing
 
