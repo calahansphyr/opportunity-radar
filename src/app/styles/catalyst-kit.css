@@ -403,7 +403,8 @@
 }
 
 /* ----------------------------------------------------------------------------
-   Deviation 3: accessibility corrections to the upstream kit.
+   Deviation 4: accessibility corrections to the upstream kit.
+   (Deviation 3 is the nav-href change, in components/ui/navigation.tsx.)
 
    a) --color-outline shipped as #707881, which is 4.48:1 on a white card and
       3.85:1 on .or-card--sunken — under WCAG AA (4.5:1) for the 12px text it

@@ -60,25 +60,28 @@ components.
   message can settle several gate fields in a single LLM parse. The legacy
   `{profile, field, answer}` form still works for one-tap buttons.
 
-## 2026-08 full redesign — "Catalyst" (paper-ledger RETIRED)
+## 2026-08 full redesign — "Catalyst" (paper-ledger RETIRED) — SUPERSEDED
 
-The dark paper-ledger theme is gone. New system: light institutional gov-tech
-(reference screenshot: "Federal Catalyst"; approved synthesis mockup:
-`public/design-mocks/final.html`). Read `DESIGN-SPEC.md` (repo root) before
-styling ANYTHING — tokens, Tailwind recipes, and rules live there.
+HISTORICAL. This section described an interim palette and type stack that the
+vendored kit replaced. Values below are kept only so old commits read straight;
+none of them are current. `DESIGN-SPEC.md` is the live document — read it, not
+this. What actually changed:
 
-- globals.css defines the new tokens (bg/card/hairline/ink/muted/faint/
-  brand/brand-strong/accent/soft/good/warn/risk + -soft tints, .shadow-card).
-  Legacy names (paper, panel, panel-2, brass, treasury, signal) are ALIASED to
-  light equivalents so old classes don't break — but migrate them on touch.
-- Fonts: Inter (all UI; --font-display also = Inter, Fraunces removed) +
-  IBM Plex Mono (labels/data/buttons only). Public Sans removed.
-- Shell: layout.tsx is now a white sticky TOP navbar (wordmark + Radar/
-  Pursuits/Monitor links from components/side-nav.tsx, which exports TopNav).
-  The left sidebar is gone; pages render full-width below the nav.
-- One blue (brand #1D4F91). Red = deadlines/alerts ONLY. Mono = chrome only.
-- Design-system previews are synced to the claude.ai/design project
-  "Opportunity Radar" (foundations/components/pages cards).
+| This section said | Now |
+| --- | --- |
+| brand `#1D4F91` | kit `--color-primary` `#00507d` |
+| Inter for display + body, Fraunces removed | Hanken Grotesk display, Inter body |
+| IBM Plex Mono, Public Sans removed | JetBrains Mono |
+| globals.css defines the tokens | `styles/catalyst-kit.css` does; globals.css only bridges them to Tailwind names |
+| legacy aliases (paper, panel, brass, treasury, signal) | deleted — they were unused |
+
+Two things from it are still true: the shell is a sticky top navbar with no
+left sidebar (`components/side-nav.tsx` exports `TopNav`), and red means
+deadlines/alerts only. `.shadow-card` also survives, now bound to the kit's own
+card shadow so there is one elevation language.
+
+The claude.ai/design preview sync mentioned here is no longer the source of
+truth either — `design/claude-design/kit-source/` is.
 
 ## Federal Catalyst adoption (2026-08-15 late) — the teammate's UI, not just its skin
 

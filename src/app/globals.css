@@ -53,6 +53,10 @@
   /* funding twin — the kit's cyan secondary */
   --color-twin: #006686; /* kit --color-secondary */
   --color-twin-soft: #c0e8ff; /* kit --color-secondary-fixed */
+  /* elevation — `shadow-card` predates the kit and is still used by
+     interview-panel / meter-panel / status-strip. Bound to the kit's own card
+     shadow so there is one elevation language, not two. */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   /* type — same three families the kit names */
   --font-display: var(--font-hanken);
   --font-sans: var(--font-inter);

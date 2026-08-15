@@ -62,7 +62,7 @@ mapping table is the `@theme` block at the top of `globals.css`.
 
 ## Deviations from the upstream bundle
 
-Three, all deliberate and all commented in place:
+Four, all deliberate and all commented in place:
 
 1. `@font-face` blocks dropped — `next/font/google` loads Hanken Grotesk, Inter
    and JetBrains Mono in `layout.tsx`, so `--font-*` is rebound to the
@@ -72,6 +72,14 @@ Three, all deliberate and all commented in place:
 3. `TopNavBar` / `SideNavBar` / `Breadcrumb` accept `{ label, href }` and render
    real anchors. The kit used buttons + `onNavigate` because it was a
    single-page demo; passing a bare string keeps that behaviour.
+4. Three accessibility corrections, at the foot of `catalyst-kit.css`:
+   `--color-outline` moved from `#707881` to `#5c6570` (the original was
+   4.48:1 on a card and 3.85:1 on a sunken card, under AA for the 12px text it
+   drives); a `prefers-reduced-motion` block, which the kit shipped without
+   even though `.or-ping` animates forever; and focus rings on buttons, icon
+   buttons, nav rows and option cards, which the kit styled only on
+   `.or-field`. `globals.css` already gave the app the last two — the kit
+   needs them to stand alone.
 
 ## Re-syncing
 
